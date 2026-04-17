@@ -23,7 +23,7 @@ export interface Customer {
   id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone_number?: string;
   address?: string;
   membership: Membership;
   description?: string;
