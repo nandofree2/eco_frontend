@@ -3,7 +3,7 @@ import SEO from '../../components/SEO';
 import {
   Plus, Search, Edit2, Trash2, Users,
   ArrowUpDown, AlertTriangle, CheckCircle2,
-  XCircle, RefreshCw, ChevronLeft, ChevronRight, Filter, Mail, Phone, Eye
+  XCircle, RefreshCw, ChevronLeft, ChevronRight, Filter, Mail, Phone, Eye, Banknote
 } from 'lucide-react';
 import CustomerModal from './CustomerModal';
 import CustomerDetailModal from './CustomerDetailModal';
@@ -11,34 +11,7 @@ import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useCustomer } from './CustomerScript';
 
 const Customer: React.FC = () => {
-  const {
-    customers,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    sortBy,
-    currentPage,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    selectedCustomer,
-    setSelectedCustomer,
-    customerToDelete,
-    setCustomerToDelete,
-    actionLoading,
-    deleteLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadCustomers,
-    handleCreateOrUpdate,
-    confirmDelete,
-    toggleSort,
-    handlePageChange
+  const { customers, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedCustomer, setSelectedCustomer, customerToDelete, setCustomerToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, confirmDelete, toggleSort, handlePageChange
   } = useCustomer();
 
   const getMembershipBadge = (membership?: number) => {
@@ -135,8 +108,11 @@ const Customer: React.FC = () => {
                   <div className="flex items-center gap-2">Customer Name <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Contact Identity</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Membership</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Phone Number</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Membership</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Receivable</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Payable</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -170,20 +146,36 @@ const Customer: React.FC = () => {
                         <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
                           <Mail className="w-3.5 h-3.5 text-gray-400" /> {customer.email}
                         </div>
-                        {customer.phone && (
-                          <div className="text-xs text-gray-400 flex items-center gap-2">
-                            <Phone className="w-3.5 h-3.5" /> {customer.phone}
-                          </div>
-                        )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-6 py-4">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <Phone className="w-3.5 h-3.5 text-gray-400" /> {customer.phone_number}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border transition-all ${getMembershipBadge(customer.membership).color}`}>
                         {getMembershipBadge(customer.membership).label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
+                    <td className="px-6 py-4">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <Banknote className="w-3.5 h-3.5 text-gray-400" /> {customer.receivable}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="space-y-0.5">
+                        <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <Banknote className="w-3.5 h-3.5 text-gray-400" /> {customer.payable}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
                         <button onClick={() => { setSelectedCustomer(customer); setDetailModalOpen(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-indigo-100" title="Full View">
                           <Eye className="w-4 h-4" />
                         </button>

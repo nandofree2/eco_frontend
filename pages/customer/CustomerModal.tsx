@@ -15,7 +15,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSubmit
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: '',
+    phone_number: '',
     address: '',
     membership: Membership.Regular,
     description: ''
@@ -29,7 +29,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSubmit
       setFormData({
         name: customer.name,
         email: customer.email,
-        phone: customer.phone || '',
+        phone_number: customer.phone_number || '',
         address: customer.address || '',
         membership: customer.membership ?? Membership.Regular,
         description: customer.description || ''
@@ -38,7 +38,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSubmit
       setFormData({
         name: '',
         email: '',
-        phone: '',
+        phone_number: '',
         address: '',
         membership: Membership.Regular,
         description: ''
@@ -115,14 +115,14 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSubmit
               />
             </div>
             <div>
-              <label className={`block text-sm font-bold mb-1 ${hasError('phone') ? 'text-red-600' : 'text-gray-700'}`}>Phone Number</label>
+              <label className={`block text-sm font-bold mb-1 ${hasError('phone_number') ? 'text-red-600' : 'text-gray-700'}`}>Phone Number</label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
-                  className={`w-full pl-10 pr-4 py-2 border rounded-xl outline-none transition-all ${hasError('phone') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className={`w-full pl-10 pr-4 py-2 border rounded-xl outline-none transition-all ${hasError('phone_number') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
+                  value={formData.phone_number}
+                  onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                   placeholder="e.g. +123456789"
                 />
               </div>
