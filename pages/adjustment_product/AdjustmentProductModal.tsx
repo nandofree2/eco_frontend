@@ -346,7 +346,7 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                       <div className="md:col-span-9">
                         <SearchableDropdown
                           label="Product"
-                          onSearch={api.products.product_list}
+                          onSearch={api.products.product_list_physical}
                           value={item.product_id || ''}
                           onChange={(id, name) => {
                             setItems(prev => {
