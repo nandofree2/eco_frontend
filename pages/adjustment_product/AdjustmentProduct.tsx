@@ -11,44 +11,7 @@ import AdjustmentProductDetailModal from './AdjustmentProductDetailModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 
 const AdjustmentProduct: React.FC = () => {
-  const {
-    adjustments,
-    branches,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    branchFilter,
-    setBranchFilter,
-    sortBy,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    selectedAdjustment,
-    setSelectedAdjustment,
-    adjustmentForDetail,
-    setAdjustmentForDetail,
-    adjustmentToDelete,
-    setAdjustmentToDelete,
-    actionLoading,
-    deleteLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadAdjustments,
-    handleCreateOrUpdate,
-    handleApprove,
-    confirmDelete,
-    toggleSort,
-    handlePageChange,
-    formatDate,
-    currentPage,
-    perPage,
-    AdjustmentType,
-    ApprovalStatus
+  const { adjustments, branches, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedAdjustment, setSelectedAdjustment, adjustmentForDetail, setAdjustmentForDetail, adjustmentToDelete, setAdjustmentToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadAdjustments, handleCreateOrUpdate, handleApprove, confirmDelete, toggleSort, handlePageChange, formatDate, currentPage, perPage, AdjustmentType, ApprovalStatus
   } = useAdjustmentProduct();
 
   return (
@@ -154,8 +117,8 @@ const AdjustmentProduct: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('created_at')}>
-                  <div className="flex items-center gap-1">Date <ArrowUpDown className="w-2.5 h-2.5 group-hover:text-eco-600" /></div>
+                <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
+                  <div className="flex items-center gap-1">Code <ArrowUpDown className="w-2.5 h-2.5 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Branch</th>
                 <th className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Type</th>
@@ -180,7 +143,7 @@ const AdjustmentProduct: React.FC = () => {
                         onClick={() => { setAdjustmentForDetail(adj); setDetailModalOpen(true); }}
                         className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-[13px] whitespace-nowrap"
                       >
-                        {formatDate(adj.created_at)}
+                        {adj.code}
                       </button>
                     </td>
                     <td className="px-4 py-2">

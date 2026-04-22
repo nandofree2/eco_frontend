@@ -33,7 +33,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
-    
+
     if (response.status === 422) {
       const data = await safeParseJson(response);
       const errorMessage = data.message || (typeof data.errors === 'string' ? data.errors : 'Validation failed');
@@ -45,18 +45,18 @@ async function request(endpoint: string, options: RequestInit = {}) {
     }
 
     if (response.status === 500) {
-       throw new Error(`Internal Server Error (500): The backend encountered an unexpected condition. Please ensure all required fields are provided and numeric values are in the correct format.`);
+      throw new Error(`Internal Server Error (500): The backend encountered an unexpected condition. Please ensure all required fields are provided and numeric values are in the correct format.`);
     }
 
     const data = await safeParseJson(response);
-    
+
     if (!response.ok) {
       const errorMessage = data.message || data.error || (typeof data.errors === 'string' ? data.errors : `Request failed with status ${response.status}`);
       const error: any = new Error(errorMessage);
       error.status = response.status;
       throw error;
     }
-    
+
     return data;
   } catch (error: any) {
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
@@ -69,7 +69,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
 const mapAttributes = (item: any) => {
   if (!item) return null;
   const attrs = item.attributes || item;
-  
+
   // Robust mapping for nested objects to ensure they are visible in lists/forms
   const getNested = (obj: any) => {
     if (!obj) return null;
@@ -81,10 +81,10 @@ const mapAttributes = (item: any) => {
   const typeMap: Record<string, number> = { storable: 0, service: 1, preorder: 2 };
   const membershipMap: Record<string, number> = { regular: 0, member: 1, vip: 2 };
 
-  const status_product = typeof attrs.status_product === 'string' 
+  const status_product = typeof attrs.status_product === 'string'
     ? (statusMap[attrs.status_product] ?? attrs.status_product)
     : attrs.status_product;
-    
+
   const product_type = typeof attrs.product_type === 'string'
     ? (typeMap[attrs.product_type] ?? attrs.product_type)
     : attrs.product_type;
@@ -133,19 +133,19 @@ export const api = {
         headers: DEFAULT_HEADERS,
         body: JSON.stringify(data)
       });
-      
+
       const rawData = await safeParseJson(response);
 
       if (!response.ok) throw new Error(rawData.status?.message || rawData.message || 'Registration failed');
 
       let user = rawData.data || rawData.user || rawData;
       let token = response.headers.get('Authorization') || rawData.token;
-      
+
       if (token && !token.startsWith('Bearer ')) token = `Bearer ${token}`;
 
       localStorage.setItem('ecolocal_token', token || '');
       localStorage.setItem('ecolocal_user', JSON.stringify(user));
-      
+
       return { user, token: token || '' };
     },
     login: async (email: string, password: string): Promise<{ user: User, token: string }> => {
@@ -154,25 +154,25 @@ export const api = {
         headers: DEFAULT_HEADERS,
         body: JSON.stringify({ user: { email, password } })
       });
-      
+
       const rawData = await safeParseJson(response);
 
       if (!response.ok) throw new Error(rawData.status?.message || rawData.message || 'Login failed');
 
       let user = rawData.data || rawData.user || rawData;
       let token = response.headers.get('Authorization') || rawData.token;
-      
+
       if (token && !token.startsWith('Bearer ')) token = `Bearer ${token}`;
 
       localStorage.setItem('ecolocal_token', token || '');
       localStorage.setItem('ecolocal_user', JSON.stringify(user));
-      
+
       return { user, token: token || '' };
     },
     logout: async () => {
       try {
         await request('/logout', { method: 'DELETE' });
-      } catch (e) {}
+      } catch (e) { }
       localStorage.removeItem('ecolocal_token');
       localStorage.removeItem('ecolocal_user');
     }
@@ -199,7 +199,7 @@ export const api = {
       const json = await request(`/unit_of_measurements?${params.toString()}`);
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
     },
-    searchLite: async (q: string): Promise<{id: string, name: string}[]> => {
+    searchLite: async (q: string): Promise<{ id: string, name: string }[]> => {
       const json = await request(`/unit_of_measurements/unit_of_measurement_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
     },
@@ -243,7 +243,7 @@ export const api = {
     delete: async (id: string) => {
       await request(`/products/${id}`, { method: 'DELETE' });
     },
-    product_list: async (q: string = ''): Promise<{id: string, name: string}[]> => {
+    product_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
       const json = await request(`/products/product_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
     }
@@ -259,7 +259,7 @@ export const api = {
       const json = await request(`/categories?${params.toString()}`);
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
     },
-    searchLite: async (q: string): Promise<{id: string, name: string}[]> => {
+    searchLite: async (q: string): Promise<{ id: string, name: string }[]> => {
       const json = await request(`/categories/category_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
     },
@@ -303,9 +303,9 @@ export const api = {
     },
     changePassword: async (id: string, data: any) => {
       // PUT /api/v1/users/:id/change_password
-      const json = await request(`/users/${id}/change_password`, { 
-        method: 'PUT', 
-        body: JSON.stringify({ user: data }) 
+      const json = await request(`/users/${id}/change_password`, {
+        method: 'PUT',
+        body: JSON.stringify({ user: data })
       });
       return json;
     },
@@ -333,23 +333,23 @@ export const api = {
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
     },
     role_list: async (): Promise<Role[]> => {
-        const json = await request('/roles/role_list');
-        return (json.data || []).map(mapAttributes);
+      const json = await request('/roles/role_list');
+      return (json.data || []).map(mapAttributes);
     },
     get: async (id: string): Promise<Role> => {
       const json = await request(`/roles/${id}`);
       return mapAttributes(json.data || json);
     },
     create: async (data: any) => {
-        const json = await request('/roles', { method: 'POST', body: JSON.stringify({ role: data }) });
-        return mapAttributes(json.data || json);
+      const json = await request('/roles', { method: 'POST', body: JSON.stringify({ role: data }) });
+      return mapAttributes(json.data || json);
     },
     update: async (id: string, data: any) => {
-        const json = await request(`/roles/${id}`, { method: 'PATCH', body: JSON.stringify({ role: data }) });
-        return mapAttributes(json.data || json);
+      const json = await request(`/roles/${id}`, { method: 'PATCH', body: JSON.stringify({ role: data }) });
+      return mapAttributes(json.data || json);
     },
     delete: async (id: string) => {
-        await request(`/roles/${id}`, { method: 'DELETE' });
+      await request(`/roles/${id}`, { method: 'DELETE' });
     }
   },
   provinces: {
@@ -487,7 +487,7 @@ export const api = {
   adjustment_products: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string): Promise<PaginatedResponse<AdjustmentProduct>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[description_cont]', query);
+      if (query) params.append('q[description_or_code_cont]', query);
       if (branchId) params.append('q[branch_id_eq]', branchId);
       if (sort) params.append('q[s]', sort);
       params.append('page', page.toString());
