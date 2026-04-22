@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Loader2, Package, Tag, Layers, Scale, AlertCircle } from 'lucide-react';
-import { Product, Category, Unit, ProductType } from '../../types';
+import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus } from '../../types';
 import { api } from '../../services/api';
 
 interface ProductModalProps {
@@ -14,14 +14,15 @@ interface ProductModalProps {
 
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, product, loading, serverErrors }) => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
+  const [units, setUnits] = useState<UnitOfMeasurement[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     category_id: '',
-    unit_id: '',
+    unit_of_measurement_id: '',
     product_type: ProductType.Physical,
+    status_product: ProductStatus.Unreleased,
     description: '',
-    price: 0
+    base_price: 0
   });
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -43,19 +44,21 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       setFormData({
         name: product.name,
         category_id: product.category_id || '',
-        unit_id: product.unit_id || '',
+        unit_of_measurement_id: product.unit_of_measurement_id || '',
         product_type: product.product_type ?? ProductType.Physical,
+        status_product: product.status_product ?? ProductStatus.Unreleased,
         description: product.description || '',
-        price: product.price || 0
+        base_price: product.base_price || 0
       });
     } else {
       setFormData({
         name: '',
         category_id: categories[0]?.id || '',
-        unit_id: units[0]?.id || '',
+        unit_of_measurement_id: units[0]?.id || '',
         product_type: ProductType.Physical,
+        status_product: ProductStatus.Unreleased,
         description: '',
-        price: 0
+        base_price: 0
       });
     }
   }, [product, categories, units, isOpen]);
@@ -135,30 +138,48 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                 <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <select
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
-                  value={formData.unit_id}
-                  onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
+                  value={formData.unit_of_measurement_id}
+                  onChange={(e) => setFormData({ ...formData, unit_of_measurement_id: e.target.value })}
                   required
                 >
                   <option value="" disabled>Select Unit</option>
-                  {units.map(u => <option key={u.id} value={u.id}>{u.name} ({u.symbol})</option>)}
+                  {units.map(u => <option key={u.id} value={u.id}>{u.name} ({u.abbreviation || u.code})</option>)}
                 </select>
               </div>
             </div>
 
-            <div>
+            <div className="col-span-1 md:col-span-2">
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Product Type</label>
-              <div className="flex bg-gray-50 p-1 rounded-xl gap-1 border border-gray-100">
-                <button type="button" onClick={() => setFormData({ ...formData, product_type: ProductType.Physical })} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.product_type === ProductType.Physical ? 'bg-white text-eco-600 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+              <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1.5 border border-gray-100">
+                <button type="button" onClick={() => setFormData({ ...formData, product_type: ProductType.Physical })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.product_type === ProductType.Physical ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
                   Physical
                 </button>
-                <button type="button" onClick={() => setFormData({ ...formData, product_type: ProductType.Marketing })} className={`flex-1 py-1.5 text-xs font-bold rounded-lg transition-all ${formData.product_type === ProductType.Marketing ? 'bg-white text-indigo-600 shadow-sm border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Marketing
+                <button type="button" onClick={() => setFormData({ ...formData, product_type: ProductType.Service })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.product_type === ProductType.Service ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Service
                 </button>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">MSRP / Base Price</label>
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Status Product</label>
+              <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1.5 border border-gray-100">
+                <button type="button" onClick={() => setFormData({ ...formData, status_product: ProductStatus.Unreleased })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.status_product === ProductStatus.Unreleased ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Unreleased
+                </button>
+                <button type="button" onClick={() => setFormData({ ...formData, status_product: ProductStatus.Active })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.status_product === ProductStatus.Active ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Active
+                </button>
+                <button type="button" onClick={() => setFormData({ ...formData, status_product: ProductStatus.Expired })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.status_product === ProductStatus.Expired ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Expired
+                </button>
+                <button type="button" onClick={() => setFormData({ ...formData, status_product: ProductStatus.Deactive })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.status_product === ProductStatus.Deactive ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Deactive
+                </button>
+              </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Base Price</label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-400">Rp</span>
                 <input
@@ -166,8 +187,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                   required
                   min="0"
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 font-bold text-gray-700"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                  value={formData.base_price}
+                  onChange={(e) => setFormData({ ...formData, base_price: Number(e.target.value) })}
                 />
               </div>
             </div>

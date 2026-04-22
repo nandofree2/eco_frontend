@@ -110,9 +110,8 @@ export enum ProductStatus {
 }
 
 export enum ProductType {
-  Storable = 0,
+  Physical = 0,
   Service = 1,
-  Preorder = 2,
 }
 
 export interface Product {

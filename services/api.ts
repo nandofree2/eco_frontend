@@ -78,7 +78,7 @@ const mapAttributes = (item: any) => {
 
   // Mapping string enums from backend to integer enums for frontend
   const statusMap: Record<string, number> = { unreleased: 0, expired: 1, active: 2, deactive: 3 };
-  const typeMap: Record<string, number> = { storable: 0, service: 1, preorder: 2 };
+  const typeMap: Record<string, number> = { physical: 0, service: 1 };
   const membershipMap: Record<string, number> = { regular: 0, member: 1, vip: 2 };
 
   const status_product = typeof attrs.status_product === 'string'
@@ -245,6 +245,10 @@ export const api = {
     },
     product_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
       const json = await request(`/products/product_list?q=${encodeURIComponent(q)}`);
+      return json.data || [];
+    },
+    product_list_physical: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+      const json = await request(`/products/product_list_physical?q=${encodeURIComponent(q)}`);
       return json.data || [];
     }
   },
