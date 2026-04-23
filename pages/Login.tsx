@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { api } from '../services/api';
 import { AuthState } from '../types';
 import SEO from '../components/SEO';
-import { Leaf, AlertCircle, Mail, Lock } from 'lucide-react';
+import { Leaf, AlertCircle, Mail, Lock, CheckCircle } from 'lucide-react';
 import { AbilityContext } from '../context/AbilityContext';
 import { parseRules } from '../services/ability';
 
@@ -12,12 +12,15 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ setAuth }) => {
-  const [email, setEmail] = useState('owner@test.com');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const ability = useContext(AbilityContext);
+
+  const registrationSuccess = location.state?.registered;
+  const [email, setEmail] = useState(location.state?.email || 'owner@test.com');
   const [password, setPassword] = useState('12341234');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const ability = useContext(AbilityContext);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +29,13 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
 
     try {
       const { user, token } = await api.auth.login(email, password);
-      
+
       // Update CASL Ability immediately
       if (user.role_ability) {
-          const rules = parseRules(user.role_ability);
-          ability.update(rules);
+        const rules = parseRules(user.role_ability);
+        ability.update(rules);
       } else if (user.role?.name === 'Owner' || user.role_name === 'Owner') {
-          ability.update([{ action: 'manage', subject: 'all' }]);
+        ability.update([{ action: 'manage', subject: 'all' }]);
       }
 
       setAuth({
@@ -50,15 +53,15 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <SEO 
-        title="Sign In" 
+      <SEO
+        title="Sign In"
         description="Access your EcoLocal account to manage your sustainable marketplace and catalog."
       />
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-            <div className="h-12 w-12 bg-eco-600 rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Leaf className="w-8 h-8" />
-            </div>
+          <div className="h-12 w-12 bg-eco-600 rounded-xl flex items-center justify-center text-white shadow-lg">
+            <Leaf className="w-8 h-8" />
+          </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           EcoLocal Identity
@@ -70,6 +73,18 @@ const Login: React.FC<LoginProps> = ({ setAuth }) => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-gray-100">
+          {registrationSuccess && (
+            <div className="mb-6 p-4 bg-eco-50 border border-eco-100 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+              <CheckCircle className="w-5 h-5 text-eco-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-eco-800">Registration Successful!</p>
+                <p className="text-xs text-eco-600 mt-1 leading-relaxed">
+                  We've sent a confirmation link to <strong>{location.state?.email}</strong>.
+                  Please check your inbox (and spam folder) to verify your account before signing in.
+                </p>
+              </div>
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-bold text-gray-700 mb-1 flex items-center gap-2">
