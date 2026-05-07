@@ -1,4 +1,4 @@
-import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct } from '../types';
+import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL || 'https://concealable-reemergent-leota.ngrok-free.dev/api/v1';
 const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER || '69420';
@@ -102,6 +102,15 @@ const mapAttributes = (item: any) => {
     };
   });
 
+  const sales_order_items = attrs.sales_order_items?.map((item: any) => {
+    const itemAttrs = item.attributes || item;
+    return {
+      id: item.id,
+      ...itemAttrs,
+      product: getNested(itemAttrs.product)
+    };
+  });
+
   return {
     id: item.id,
     ...attrs,
@@ -109,6 +118,7 @@ const mapAttributes = (item: any) => {
     product_type,
     membership,
     adjustment_product_items,
+    sales_order_items,
     sku: attrs.sku || attrs.code,
     code: attrs.code || attrs.sku,
     cover_image_url: attrs.cover_image_url || attrs.cover_image,
@@ -459,6 +469,10 @@ export const api = {
     },
     delete: async (id: string) => {
       await request(`/customers/${id}`, { method: 'DELETE' });
+    },
+    customer_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+      const json = await request(`/customers/customer_list?q=${encodeURIComponent(q)}`);
+      return json.data || [];
     }
   },
   stock_products: {
@@ -525,6 +539,34 @@ export const api = {
     },
     delete: async (id: string) => {
       await request(`/adjustment_products/${id}`, { method: 'DELETE' });
+    }
+  },
+  sales_orders: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string): Promise<PaginatedResponse<SalesOrder>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[description_or_code_cont]', query);
+      if (branchId) params.append('q[branch_id_eq]', branchId);
+      if (customerId) params.append('q[customer_id_eq]', customerId);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/sales_orders?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<SalesOrder> => {
+      const json = await request(`/sales_orders/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: any) => {
+      const json = await request('/sales_orders', { method: 'POST', body: JSON.stringify({ sales_order: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: any) => {
+      const json = await request(`/sales_orders/${id}`, { method: 'PATCH', body: JSON.stringify({ sales_order: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/sales_orders/${id}`, { method: 'DELETE' });
     }
   }
 };

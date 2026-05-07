@@ -1,7 +1,7 @@
 import { PureAbility, AbilityBuilder, AbilityClass } from '@casl/ability';
 
 export type Action = 'manage' | 'create' | 'read' | 'update' | 'destroy' | 'see_menu' | string;
-export type Subject = 'all' | 'Product' | 'Category' | 'UnitOfMeasurement' | 'User' | 'Role' | 'Dashboard' | 'Province' | 'City' | 'Branch' | 'Tenant' | 'Customer' | 'StockProduct' | 'AdjustmentProduct' | string;
+export type Subject = 'all' | 'Product' | 'Category' | 'UnitOfMeasurement' | 'User' | 'Role' | 'Dashboard' | 'Province' | 'City' | 'Branch' | 'Tenant' | 'Customer' | 'StockProduct' | 'AdjustmentProduct' | 'SalesOrder' | string;
 
 export interface RawRule {
   action: Action[];
@@ -33,7 +33,7 @@ export const parseRules = (rawRules: any) => {
     rawRules.forEach((rule) => {
       const actions = Array.isArray(rule.action) ? rule.action : [rule.action];
       const subjects = Array.isArray(rule.subject) ? rule.subject : [rule.subject];
-      
+
       actions.forEach((action: Action) => {
         subjects.forEach((subject: Subject) => {
           can(action, subject);

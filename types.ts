@@ -174,6 +174,33 @@ export interface AdjustmentProduct {
   updated_at: string;
 }
 
+export interface SalesOrderItem {
+  id?: string;
+  product_id: string;
+  product_name?: string;
+  quantity: number;
+  price: number;
+  total_price: number;
+}
+
+export interface SalesOrder {
+  id: string;
+  code?: string;
+  branch_id: string;
+  branch_name?: string;
+  customer_id: string;
+  customer_name?: string;
+  description?: string;
+  total_price: number;
+  discount_price: number;
+  tax_price: number;
+  grand_total: number;
+  tax_include: boolean;
+  sales_order_items: SalesOrderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;

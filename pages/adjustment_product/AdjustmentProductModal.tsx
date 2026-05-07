@@ -342,7 +342,7 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                       <X className="w-3 h-3" />
                     </button>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                       <div className="md:col-span-9">
                         <SearchableDropdown
                           label="Product"
@@ -369,14 +369,14 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                         )}
                       </div>
 
-                      <div className="md:col-span-3 space-y-0.5">
-                        <label className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Qty</label>
+                      <div className="md:col-span-3">
+                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Qty</label>
                         <input
                           type="number"
                           min="1"
                           value={item.quantity || ''}
                           onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                          className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium`}
+                          className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
                         />
                         {errors[`item_${index}_quantity`] && (
                           <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_quantity`]}</p>
