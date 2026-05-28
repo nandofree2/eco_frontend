@@ -320,8 +320,16 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
               )}
 
               <div className="space-y-2">
+                {items.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-6 hidden md:grid">
+                    <div className="md:col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
+                    <div className="md:col-span-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Price</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</div>
+                  </div>
+                )}
                 {items.map((item, index) => (
-                  <div key={index} className="p-3 bg-gray-50 border border-gray-200 rounded-xl relative group">
+                  <div key={index} className="p-1 bg-gray-50 border border-gray-200 rounded-xl relative group">
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
@@ -330,11 +338,10 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                       <X className="w-3 h-3" />
                     </button>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
                       {/* Product */}
                       <div className="md:col-span-5">
                         <SearchableDropdown
-                          label="Product"
                           onSearch={api.products.product_list}
                           value={item.product_id || ''}
                           onChange={(id, name) => {
@@ -356,7 +363,6 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
 
                       {/* Qty */}
                       <div className="md:col-span-2">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Qty</label>
                         <input
                           type="number"
                           min="1"
@@ -372,7 +378,6 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
 
                       {/* Price */}
                       <div className="md:col-span-3">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Unit Price</label>
                         <input
                           type="number"
                           min="0"
@@ -388,7 +393,6 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
 
                       {/* Line Total */}
                       <div className="md:col-span-2">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Line Total</label>
                         <div className="w-full px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 shadow-sm">
                           {formatCurrency(sanitizeNumber(item.quantity || 0) * sanitizeNumber(item.price || 0))}
                         </div>
