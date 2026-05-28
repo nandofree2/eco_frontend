@@ -4,18 +4,20 @@ import { Search, ChevronDown, Loader2, X } from 'lucide-react';
 interface Option {
   id: string;
   name: string;
+  physical_stock?: number;
 }
 
 interface SearchableDropdownProps {
   label: string;
   value: string;
-  onChange: (id: string, name?: string) => void;
+  onChange: (id: string, name?: string, physicalStock?: number) => void;
   onSearch: (query: string) => Promise<Option[]>;
   placeholder?: string;
   error?: boolean;
   required?: boolean;
   initialName?: string;
   compact?: boolean;
+  dependencies?: any[];
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -27,28 +29,29 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   error = false,
   required = false,
   initialName = "",
-  compact = false
+  compact = false,
+  dependencies = []
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [options, setOptions] = useState<Option[]>([]);
   const [loading, setLoading] = useState(false);
   const [displayName, setDisplayName] = useState(initialName);
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Sync display name if initialName changes (important for edit mode hydration)
   useEffect(() => {
     if (initialName) {
-        setDisplayName(initialName);
+      setDisplayName(initialName);
     }
   }, [initialName]);
 
   // If value is cleared from outside, clear display name
   useEffect(() => {
     if (!value && !initialName) {
-        setDisplayName('');
+      setDisplayName('');
     }
   }, [value]);
 
@@ -58,6 +61,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       handleSearch('');
     }
   }, [isOpen]);
+
+  // Re-fetch or clear options when external dependencies change
+  const depString = JSON.stringify(dependencies);
+  useEffect(() => {
+    if (isOpen) {
+      handleSearch(query);
+    } else {
+      setOptions([]);
+    }
+  }, [depString]);
 
   // Debounced search
   useEffect(() => {
@@ -93,7 +106,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const selectOption = (option: Option) => {
     setDisplayName(option.name);
-    onChange(option.id, option.name);
+    onChange(option.id, option.name, option.physical_stock);
     setIsOpen(false);
     setQuery('');
   };
@@ -103,18 +116,17 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       <label className={`block ${compact ? 'text-[9px]' : 'text-sm'} font-bold mb-0.5 flex items-center gap-1.5 ${error ? 'text-red-600' : 'text-gray-700'}`}>
         {label} {required && <span className="text-red-400">*</span>}
       </label>
-      
+
       <button
         type="button"
         onClick={() => {
           setIsOpen(!isOpen);
           if (!isOpen) setTimeout(() => inputRef.current?.focus(), 10);
         }}
-        className={`w-full flex items-center justify-between ${compact ? 'px-2 py-1.5 rounded-lg text-xs' : 'px-4 py-2.5 rounded-xl text-sm'} border outline-none transition-all font-medium text-left bg-white shadow-sm ${
-          error 
-            ? 'border-red-300 ring-4 ring-red-100 bg-red-50/20' 
-            : 'border-gray-200 focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 hover:border-gray-300'
-        }`}
+        className={`w-full flex items-center justify-between ${compact ? 'px-2 py-1.5 rounded-lg text-xs' : 'px-4 py-2.5 rounded-xl text-sm'} border outline-none transition-all font-medium text-left bg-white shadow-sm ${error
+          ? 'border-red-300 ring-4 ring-red-100 bg-red-50/20'
+          : 'border-gray-200 focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 hover:border-gray-300'
+          }`}
       >
         <span className={displayName ? 'text-gray-900' : 'text-gray-400'}>
           {displayName || placeholder}
@@ -124,7 +136,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
       {isOpen && (
         <div className="absolute z-[110] mt-2 w-full bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="p-2 border-b border-gray-50 flex items-center gap-2 bg-gray-50/30">
+          <div className="p-1 border-b border-gray-50 flex items-center gap-2 bg-gray-50/30">
             <Search className="w-4 h-4 text-gray-400 ml-2" />
             <input
               ref={inputRef}
@@ -137,7 +149,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
             />
             {loading && <Loader2 className="w-4 h-4 text-eco-500 animate-spin mr-2" />}
           </div>
-          
+
           <div className="max-h-60 overflow-y-auto">
             {options.length === 0 && !loading ? (
               <div className="p-3 text-center text-gray-400 text-xs italic">No matches found.</div>
@@ -147,11 +159,10 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
                   key={opt.id}
                   type="button"
                   onClick={() => selectOption(opt)}
-                  className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors border-l-4 ${
-                    value === opt.id 
-                      ? 'bg-eco-50 border-eco-500 text-eco-700' 
-                      : 'border-transparent hover:bg-gray-50 text-gray-700'
-                  }`}
+                  className={`w-full text-left px-3 py-2 text-xs font-medium transition-colors border-l-4 ${value === opt.id
+                    ? 'bg-eco-50 border-eco-500 text-eco-700'
+                    : 'border-transparent hover:bg-gray-50 text-gray-700'
+                    }`}
                 >
                   {opt.name}
                 </button>

@@ -539,6 +539,19 @@ export const api = {
     },
     delete: async (id: string) => {
       await request(`/adjustment_products/${id}`, { method: 'DELETE' });
+    },
+    product_list_adjustment: async (q: string = '', branchId?: string, adjustmentType?: string, selectedProductIds?: string[]): Promise<{ id: string, name: string, physical_stock: number }[]> => {
+      const params = new URLSearchParams();
+      params.append('q', q);
+      if (branchId) params.append('branch_id', branchId);
+      if (adjustmentType) params.append('adjustment_type', adjustmentType);
+      if (selectedProductIds && selectedProductIds.length > 0) {
+        selectedProductIds.forEach(id => {
+          if (id) { params.append('selected_product_ids[]', id); }
+        });
+      }
+      const json = await request(`/adjustment_products/product_list_adjustment?${params.toString()}`);
+      return json.data || [];
     }
   },
   sales_orders: {

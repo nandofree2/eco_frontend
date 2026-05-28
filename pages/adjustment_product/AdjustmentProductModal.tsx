@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AdjustmentProduct, AdjustmentProductItem, AdjustmentType, Branch } from '../../types';
 import { X, SlidersHorizontal, AlertCircle, Loader2, Plus, Trash2, Building2, FileText, Package } from 'lucide-react';
 import SearchableDropdown from '../../components/SearchableDropdown';
@@ -33,6 +33,14 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [stockWarnings, setStockWarnings] = useState<Record<number, string>>({});
 
+  const [showWarningModal, setShowWarningModal] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
+
+  const itemsRef = useRef(items);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+
   useEffect(() => {
     if (isOpen) {
       if (adjustment) {
@@ -50,25 +58,70 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
         setBranchId('');
         setDescription('');
         setAdjustmentType(AdjustmentType.In);
-        setItems([{ product_id: '', quantity: 1 }]);
+        setItems([{ product_id: '', quantity: 1, physical_stock: 0 }]);
         setDeletedItemIds([]);
       }
       setErrors({});
-      loadBranches();
+      setShowWarningModal(false);
+      setWarningMessage('');
+      loadBranches(adjustment?.branch_id);
     }
   }, [isOpen, adjustment]);
 
-  const loadBranches = async () => {
+  const loadBranches = async (selectedBranchId?: string) => {
     setBranchesLoading(true);
     try {
       const data = await api.branches.branch_list();
       setBranches(data);
+      if (data && data.length > 0 && !selectedBranchId) {
+        setBranchId(data[0].id);
+      }
     } catch (err) {
       console.error('Failed to load branches:', err);
     } finally {
       setBranchesLoading(false);
     }
   };
+
+  // Refresh physical stock of all selected items when branch or adjustment type changes
+  useEffect(() => {
+    const refreshPhysicalStocks = async () => {
+      if (!branchId || itemsRef.current.length === 0) return;
+
+      const currentItems = itemsRef.current;
+      const updatedItems = await Promise.all(
+        currentItems.map(async (item) => {
+          if (item.product_id) {
+            try {
+              const searchName = item.product_name || '';
+              const results = await api.adjustment_products.product_list_adjustment(
+                searchName,
+                branchId,
+                adjustmentType
+              );
+              const match = results.find(r => r.id === item.product_id);
+              if (match) {
+                return {
+                  ...item,
+                  physical_stock: match.physical_stock
+                };
+              }
+            } catch (err) {
+              console.error(`Failed to refresh stock for product ${item.product_id}:`, err);
+            }
+          }
+          return item;
+        })
+      );
+
+      const hasChanged = updatedItems.some((item, idx) => item.physical_stock !== currentItems[idx]?.physical_stock);
+      if (hasChanged) {
+        setItems(updatedItems);
+      }
+    };
+
+    refreshPhysicalStocks();
+  }, [branchId, adjustmentType]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -91,6 +144,25 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
+
+    // Check for negative final stock
+    const negativeItems: string[] = [];
+    items.forEach((item) => {
+      const physicalStock = item.physical_stock || 0;
+      const quantity = item.quantity || 0;
+      const finalStock = adjustmentType === AdjustmentType.In ? physicalStock + quantity : physicalStock - quantity;
+      if (finalStock < 0) {
+        negativeItems.push(item.product_name || 'Unknown Product');
+      }
+    });
+
+    if (negativeItems.length > 0) {
+      setWarningMessage(
+        `Cannot save adjustment because the following products will have a negative final stock: ${negativeItems.join(', ')}.`
+      );
+      setShowWarningModal(true);
+      return;
+    }
 
     const adjustment_product_items_attributes = items.map(item => {
       const attr: any = {
@@ -162,7 +234,6 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
     try {
       await api.adjustment_products.checkStockItem(branchId, productId, quantity, adjustmentType);
 
-      // If success, clear warning
       setStockWarnings(prev => {
         const next = { ...prev };
         delete next[index];
@@ -282,8 +353,8 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                     onChange={(e) => setAdjustmentType(e.target.value as AdjustmentType)}
                     className={`w-full px-3 py-1.5 bg-gray-50 border ${errors.adjustment_type || serverErrors?.adjustment_type ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium appearance-none`}
                   >
-                    <option value={AdjustmentType.In}>In (+)</option>
-                    <option value={AdjustmentType.Out}>Out (-)</option>
+                    <option value={AdjustmentType.In} className="text-green-600 font-semibold"> In (+)</option>
+                    <option value={AdjustmentType.Out} className="text-red-600 font-semibold">Out (-)</option>
                   </select>
                   {(errors.adjustment_type || serverErrors?.adjustment_type) && (
                     <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 mt-0.5">
@@ -331,9 +402,18 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                 </div>
               )}
 
-              <div className="space-y-2">
+              <div className="space-y-1">
+                {items.length > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-3   md:grid">
+                    <div className="md:col-span-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">stock</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Final Stock</div>
+                  </div>
+                )}
+
                 {items.map((item, index) => (
-                  <div key={index} className="p-3 bg-gray-50 border border-gray-200 rounded-xl relative group">
+                  <div key={index} className="p-1 bg-gray-50 border border-gray-200 rounded-xl relative group">
                     <button
                       type="button"
                       onClick={() => removeItem(index)}
@@ -342,20 +422,18 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                       <X className="w-3 h-3" />
                     </button>
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                      <div className="md:col-span-9">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                      <div className="md:col-span-6">
                         <SearchableDropdown
-                          label="Product"
-                          onSearch={api.products.product_list_physical}
+                          onSearch={(q) => {
+                            const selectedProductIds = items.map(i => i.product_id).filter(Boolean) as string[];
+                            return api.adjustment_products.product_list_adjustment(q, branchId, adjustmentType, selectedProductIds);
+                          }}
                           value={item.product_id || ''}
-                          onChange={(id, name) => {
+                          onChange={(id, name, physicalStock) => {
                             setItems(prev => {
                               const newItems = [...prev];
-                              newItems[index] = {
-                                ...newItems[index],
-                                product_id: id,
-                                product_name: name || newItems[index].product_name
-                              };
+                              newItems[index] = { ...newItems[index], product_id: id, product_name: name || newItems[index].product_name, physical_stock: physicalStock || newItems[index].physical_stock };
                               return newItems;
                             });
                           }}
@@ -363,20 +441,21 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                           error={!!errors[`item_${index}_product`]}
                           initialName={item.product_name}
                           compact={true}
+                          dependencies={[branchId, adjustmentType, items.map(i => i.product_id).filter(Boolean).join(',')]}
                         />
                         {errors[`item_${index}_product`] && (
                           <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_product`]}</p>
                         )}
                       </div>
+                      <div className="md:col-span-2">
+                        <input type="number" min="0" value={item.physical_stock} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                          readOnly
+                        />
 
-                      <div className="md:col-span-3">
-                        <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">Qty</label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={item.quantity || ''}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                          className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <input type="number" min="1" value={item.quantity || 0} onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)} className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
                         />
                         {errors[`item_${index}_quantity`] && (
                           <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_quantity`]}</p>
@@ -386,6 +465,12 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                             <AlertCircle className="w-2.5 h-2.5" /> {stockWarnings[index]}
                           </p>
                         )}
+                      </div>
+                      <div className="md:col-span-2">
+                        <input type="number" min="0" value={adjustmentType === AdjustmentType.In ? item.physical_stock + item.quantity : item.physical_stock - item.quantity} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                          readOnly
+                        />
+
                       </div>
                     </div>
                   </div>
@@ -434,6 +519,39 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
           </button>
         </div>
       </div>
+      {showWarningModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 border border-gray-100">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowWarningModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Warning: Negative Stock</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">{warningMessage}</p>
+            </div>
+
+            <div className="bg-gray-50 px-6 py-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowWarningModal(false)}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition-all shadow-md shadow-red-200 active:scale-95"
+              >
+                Okay
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
