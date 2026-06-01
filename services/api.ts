@@ -1,7 +1,7 @@
 import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder } from '../types';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'https://concealable-reemergent-leota.ngrok-free.dev/api/v1';
-const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER || '69420';
+const API_BASE_URL = process.env.API_BASE_URL;
+const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER;
 
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json',
