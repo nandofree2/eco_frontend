@@ -131,24 +131,24 @@ const Product: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('name')}>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('name')}>
                   <div className="flex items-center gap-2">Product <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('category_name')}>
-                  <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('variant_name')}>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('variant_name')}>
                   <div className="flex items-center gap-2">Variant <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('product_type')}>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('category_name')}>
+                  <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('product_type')}>
                   <div className="flex items-center gap-2">Type <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Measurement</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Base Price</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('status_product')}>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Measurement</th>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Base Price</th>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('status_product')}>
                   <div className="flex items-center gap-2">status <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Actions</th>
+                <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">SKU</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -169,56 +169,48 @@ const Product: React.FC = () => {
               ) : (
                 products.map((product) => (
                   <tr key={product.id} className="group hover:bg-eco-50/20 transition-all duration-300">
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
 
                         <div className="flex flex-col">
-                          <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{product.name}</span>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                          </div>
+                          <button onClick={() => { setSelectedProduct(product); setDetailModalOpen(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-indigo-100" title="Specifications">
+                            <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{product.name}</span>
+                          </button>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         {product.variant.name || ' '}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         {product.category.name}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase border ${product.product_type === ProductType.Physical ? 'bg-eco-50 text-eco-600 border-eco-100' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
                         {product.product_type === ProductType.Physical ? 'Physical' : 'Service'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       {product.unit_of_measurement.name}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className="font-bold text-gray-900 text-sm">
                         {formatPrice(product.base_price)}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className="font-bold text-gray-900 text-sm">
                         {product.status_product_label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 ">
-                      <div className="flex items-left gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
-                        <button onClick={() => { setSelectedProduct(product); setDetailModalOpen(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-indigo-100" title="Specifications">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setSelectedProduct(product); setServerErrors(null); setModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-blue-100" title="Modify Asset">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setProductToDelete(product); setDeleteModalOpen(true); }} className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100" title="Revoke Registry">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                    <td className="px-4 py-3">
+                      <span className="font-bold text-gray-900 text-sm">
+                        {product.code}
+                      </span>
                     </td>
                   </tr>
                 ))
@@ -268,7 +260,22 @@ const Product: React.FC = () => {
       </div>
 
       <ProductModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSubmit={handleCreateOrUpdate} product={selectedProduct} loading={actionLoading} serverErrors={serverErrors} />
-      <ProductDetailModal isOpen={isDetailModalOpen} onClose={() => setDetailModalOpen(false)} product={selectedProduct} />
+      <ProductDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        product={selectedProduct}
+        onEdit={(p) => {
+          setDetailModalOpen(false);
+          setSelectedProduct(p);
+          setServerErrors(null);
+          setModalOpen(true);
+        }}
+        onDelete={(p) => {
+          setDetailModalOpen(false);
+          setProductToDelete(p);
+          setDeleteModalOpen(true);
+        }}
+      />
       <DeleteConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={confirmDelete} title="Revoke Asset Registry" message={`Are you sure you want to permanently remove "${selectedProduct?.name}" from the system catalog? This will affect all associated inventory data.`} loading={deleteLoading} />
     </div>
   );
