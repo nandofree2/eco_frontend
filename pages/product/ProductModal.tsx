@@ -20,6 +20,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     name: '',
     category_id: '',
     variant_id: '',
+    code: '',
     unit_of_measurement_id: '',
     product_type: ProductType.Physical,
     status_product: ProductStatus.Unreleased,
@@ -49,6 +50,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         name: product.name,
         category_id: product.category_id || '',
         variant_id: product.variant_id || '',
+        code: product.code || '',
         unit_of_measurement_id: product.unit_of_measurement_id || '',
         product_type: product.product_type ?? ProductType.Physical,
         status_product: product.status_product ?? ProductStatus.Unreleased,
@@ -164,6 +166,19 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                   <option value="" disabled>Select Unit</option>
                   {units.map(u => <option key={u.id} value={u.id}>{u.name} ({u.abbreviation || u.code})</option>)}
                 </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">SKU code</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  className={`w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all font-medium`}
+                  value={formData.code}
+                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  placeholder="Example: PRC ..."
+                />
               </div>
             </div>
 

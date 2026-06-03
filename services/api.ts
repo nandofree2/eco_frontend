@@ -228,7 +228,7 @@ export const api = {
   products: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, status?: string, type?: string): Promise<PaginatedResponse<Product>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[name_or_code_cont]', query);
+      if (query) params.append('q[name_or_code_or_variant_name_cont]', query);
       if (sort) params.append('q[s]', sort);
       if (status) params.append('q[status_product_eq]', status);
       if (type) params.append('q[product_type_eq]', type);
