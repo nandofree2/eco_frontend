@@ -119,8 +119,7 @@ const mapAttributes = (item: any) => {
     membership,
     adjustment_product_items,
     sales_order_items,
-    sku: attrs.sku || attrs.code,
-    code: attrs.code || attrs.sku,
+    code: attrs.code,
     cover_image_url: attrs.cover_image_url || attrs.cover_image,
     preview_images_urls: attrs.preview_images_urls || attrs.preview_images || attrs.preview_image_urls,
     category: getNested(attrs.category),
@@ -266,7 +265,7 @@ export const api = {
   categories: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<Category>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[name_or_sku_or_description_cont]', query);
+      if (query) params.append('q[name_or_code_or_description_cont]', query);
       if (sort) params.append('q[s]', sort);
       params.append('page', page.toString());
       params.append('per_page', perPage.toString());
@@ -287,6 +286,33 @@ export const api = {
     },
     delete: async (id: string) => {
       await request(`/categories/${id}`, { method: 'DELETE' });
+    }
+  },
+
+  variants: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<Category>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[name_or_code_or_description_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/variants?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    searchLite: async (q: string): Promise<{ id: string, name: string }[]> => {
+      const json = await request(`/variants/variant_list?q=${encodeURIComponent(q)}`);
+      return json.data || [];
+    },
+    create: async (data: Partial<Category>) => {
+      const json = await request('/variants', { method: 'POST', body: JSON.stringify({ variant: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<Category>) => {
+      const json = await request(`/variants/${id}`, { method: 'PATCH', body: JSON.stringify({ variant: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/variants/${id}`, { method: 'DELETE' });
     }
   },
 

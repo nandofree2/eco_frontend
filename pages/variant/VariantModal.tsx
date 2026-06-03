@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Loader2, Tags, AlertCircle } from 'lucide-react';
-import { Category } from '../../types';
+import { Variant } from '../../types';
 
-interface CategoryModalProps {
+interface VariantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: Partial<Category>) => Promise<void>;
-  category?: Category | null;
+  onSubmit: (data: Partial<Variant>) => Promise<void>;
+  variant?: Variant | null;
   loading: boolean;
   serverErrors?: Record<string, string[]> | null;
 }
 
-const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit, category, loading, serverErrors }) => {
+const VariantModal: React.FC<VariantModalProps> = ({ isOpen, onClose, onSubmit, variant, loading, serverErrors }) => {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
@@ -22,16 +22,16 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
   const codeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (category) {
+    if (variant) {
       setFormData({
-        name: category.name,
-        code: category.code || '',
-        description: category.description || ''
+        name: variant.name,
+        code: variant.code || '',
+        description: variant.description || ''
       });
     } else {
       setFormData({ name: '', code: '', description: '' });
     }
-  }, [category, isOpen]);
+  }, [variant, isOpen]);
 
   useEffect(() => {
     if (serverErrors) {
@@ -55,7 +55,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
         <div className="bg-eco-600 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Tags className="w-5 h-5" />
-            {category ? 'Edit Catalog Category' : 'New Catalog Category'}
+            {variant ? 'Edit Variant' : 'New Variant'}
           </h2>
           <button
             onClick={onClose}
@@ -83,7 +83,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className={`block text-sm font-bold mb-1 ${hasError('name') ? 'text-red-600' : 'text-gray-700'}`}>Category Name</label>
+            <label className={`block text-sm font-bold mb-1 ${hasError('name') ? 'text-red-600' : 'text-gray-700'}`}>Variant Name</label>
             <input
               ref={nameRef}
               type="text"
@@ -120,7 +120,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
             <label className="block text-sm font-bold text-gray-700 mb-1">Description</label>
             <textarea
               className="w-full px-4 py-2 border border-gray-200 rounded-xl focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 outline-none transition-all"
-              placeholder="Provide context for this category..."
+              placeholder="Provide context for this variant..."
               rows={3}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -141,7 +141,7 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
               className="flex-1 bg-eco-600 text-white font-bold px-4 py-2.5 rounded-xl hover:bg-eco-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-eco-200 active:scale-95 transition-all"
             >
               {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-              {category ? 'Update Category' : 'Create Category'}
+              {variant ? 'Update Variant' : 'Create Variant'}
             </button>
           </div>
         </form>
@@ -150,4 +150,4 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ isOpen, onClose, onSubmit
   );
 };
 
-export default CategoryModal;
+export default VariantModal;

@@ -5,13 +5,13 @@ import {
   ArrowUpDown, AlertTriangle, CheckCircle2,
   XCircle, RefreshCw, ChevronLeft, ChevronRight, Filter, Hash
 } from 'lucide-react';
-import CategoryModal from './CategoryModal';
+import VariantModal from './VariantModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
-import { useCategory } from './CategoryScript';
+import { useVariant } from './VariantScript';
 
-const Category: React.FC = () => {
+const Variant: React.FC = () => {
   const {
-    categories,
+    variants,
     loading,
     searchTerm,
     setSearchTerm,
@@ -22,26 +22,26 @@ const Category: React.FC = () => {
     setModalOpen,
     isDeleteModalOpen,
     setDeleteModalOpen,
-    selectedCategory,
-    setSelectedCategory,
-    categoryToDelete,
-    setCategoryToDelete,
+    selectedVariant,
+    setSelectedVariant,
+    variantToDelete,
+    setVariantToDelete,
     actionLoading,
     deleteLoading,
     serverErrors,
     setServerErrors,
     toasts,
-    loadCategories,
+    loadVariants,
     handleCreateOrUpdate,
     confirmDelete,
     toggleSort,
     handlePageChange
-  } = useCategory();
+  } = useVariant();
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
       <SEO
-        title="Catalog Categories"
+        title="Variants"
         description="Organize your sustainable products into logical groupings and SKU patterns."
       />
       <div className="fixed top-20 right-6 z-[200] space-y-3 w-80 pointer-events-none">
@@ -67,7 +67,7 @@ const Category: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={() => loadCategories()} className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm">
+          <button onClick={() => Variant()} className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm">
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
           <div className="relative group">
@@ -88,9 +88,9 @@ const Category: React.FC = () => {
               </button>
             )}
           </div>
-          <button onClick={() => { setSelectedCategory(null); setServerErrors(null); setModalOpen(true); }} className="bg-eco-600 hover:bg-eco-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-eco-200 active:scale-95">
+          <button onClick={() => { setSelectedVariant(null); setServerErrors(null); setModalOpen(true); }} className="bg-eco-600 hover:bg-eco-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-eco-200 active:scale-95">
             <Plus className="w-5 h-5" />
-            <span>Add Category</span>
+            <span>Add Variant</span>
           </button>
         </div>
       </div>
@@ -103,7 +103,7 @@ const Category: React.FC = () => {
             </div>
             <div className="h-4 w-px bg-gray-200"></div>
             <div className="text-xs font-medium text-gray-500">
-              Displaying <span className="text-gray-900 font-bold">{categories.length}</span> categories
+              Displaying <span className="text-gray-900 font-bold">{variants.length}</span> variants
             </div>
           </div>
           {searchTerm && (
@@ -118,7 +118,7 @@ const Category: React.FC = () => {
             <thead className="bg-gray-50/50">
               <tr>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('name')}>
-                  <div className="flex items-center gap-2">Category Name <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                  <div className="flex items-center gap-2">Variant Name <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
                   <div className="flex items-center justify-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
@@ -128,45 +128,45 @@ const Category: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {loading && categories.length === 0 ? (
+              {loading && variants.length === 0 ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td colSpan={4} className="px-6 py-6"><div className="h-5 bg-gray-100 rounded-lg w-full"></div></td>
                   </tr>
                 ))
-              ) : categories.length === 0 ? (
+              ) : variants.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
                     <Tags className="w-16 h-16 mx-auto mb-4 opacity-5" />
-                    <p className="font-bold text-lg">No categories found.</p>
-                    <p className="text-sm">Try adjusting your search or add a new hierarchy level.</p>
+                    <p className="font-bold text-lg">No variants found.</p>
+                    <p className="text-sm">Try adjusting your search or add a new variant level.</p>
                   </td>
                 </tr>
               ) : (
-                categories.map((cat) => (
-                  <tr key={cat.id} className="group hover:bg-eco-50/20 transition-all duration-300">
+                variants.map((variant) => (
+                  <tr key={variant.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shadow-sm border border-orange-100/50">
                           <Tags className="w-5 h-5" />
                         </div>
-                        <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{cat.name}</span>
+                        <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{variant.name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-xs font-mono font-bold border border-gray-200">
-                        <Hash className="w-3 h-3" /> {cat.code}
+                        <Hash className="w-3 h-3" /> {variant.code}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-500 italic line-clamp-1 max-w-xs">{cat.description || 'No functional description provided.'}</p>
+                      <p className="text-sm text-gray-500 italic line-clamp-1 max-w-xs">{variant.description || 'No functional description provided.'}</p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
-                        <button onClick={() => { setSelectedCategory(cat); setServerErrors(null); setModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-blue-100" title="Modify Hierarchy">
+                        <button onClick={() => { setSelectedVariant(variant); setServerErrors(null); setModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-blue-100" title="Modify Hierarchy">
                           <Edit2 className="w-4 h-4" />
                         </button>
-                        <button onClick={() => { setCategoryToDelete(cat); setDeleteModalOpen(true); }} className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100" title="Remove Entry">
+                        <button onClick={() => { setVariantToDelete(variant); setDeleteModalOpen(true); }} className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100" title="Remove Entry">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -218,10 +218,10 @@ const Category: React.FC = () => {
         )}
       </div>
 
-      <CategoryModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSubmit={handleCreateOrUpdate} category={selectedCategory} loading={actionLoading} serverErrors={serverErrors} />
-      <DeleteConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={confirmDelete} title="Purge Catalog Category" message={`Are you sure you want to remove "${categoryToDelete?.name}"? All products associated with this category will be orphaned or must be re-categorized.`} loading={deleteLoading} />
+      <VariantModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSubmit={handleCreateOrUpdate} variant={selectedVariant} loading={actionLoading} serverErrors={serverErrors} />
+      <DeleteConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={confirmDelete} title="Purge Catalog Variant" message={`Are you sure you want to remove "${variantToDelete?.name}"? All products associated with this variant will be orphaned or must be re-defined.`} loading={deleteLoading} />
     </div>
   );
 };
 
-export default Category;
+export default Variant;

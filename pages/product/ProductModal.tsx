@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Loader2, Package, Tag, Layers, Scale, AlertCircle } from 'lucide-react';
-import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus } from '../../types';
+import { X, Save, Loader2, Package, Tag, AlertCircle } from 'lucide-react';
+import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus, Variant } from '../../types';
 import { api } from '../../services/api';
 
 interface ProductModalProps {
@@ -14,10 +14,12 @@ interface ProductModalProps {
 
 const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, product, loading, serverErrors }) => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [variants, setVariants] = useState<Variant[]>([]);
   const [units, setUnits] = useState<UnitOfMeasurement[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     category_id: '',
+    variant_id: '',
     unit_of_measurement_id: '',
     product_type: ProductType.Physical,
     status_product: ProductStatus.Unreleased,
@@ -31,9 +33,11 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     if (isOpen) {
       Promise.all([
         api.categories.list('', 'name asc', 1, 100),
+        api.variants.list('', 'name asc', 1, 100),
         api.units.list('', 'name asc', 1, 100)
-      ]).then(([catRes, unitRes]) => {
+      ]).then(([catRes, variantRes, unitRes]) => {
         setCategories(catRes.data);
+        setVariants(variantRes.data);
         setUnits(unitRes.data);
       }).catch(console.error);
     }
@@ -44,6 +48,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       setFormData({
         name: product.name,
         category_id: product.category_id || '',
+        variant_id: product.variant_id || '',
         unit_of_measurement_id: product.unit_of_measurement_id || '',
         product_type: product.product_type ?? ProductType.Physical,
         status_product: product.status_product ?? ProductStatus.Unreleased,
@@ -54,6 +59,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       setFormData({
         name: '',
         category_id: categories[0]?.id || '',
+        variant_id: variants[0]?.id || '',
         unit_of_measurement_id: units[0]?.id || '',
         product_type: ProductType.Physical,
         status_product: ProductStatus.Unreleased,
@@ -61,7 +67,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         base_price: 0
       });
     }
-  }, [product, categories, units, isOpen]);
+  }, [product, categories, variants, units, isOpen]);
 
   useEffect(() => {
     if (serverErrors?.name) nameRef.current?.focus();
@@ -117,11 +123,25 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
             </div>
 
             <div>
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Classification</label>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Variant</label>
               <div className="relative">
-                <Layers className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <select
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
+                  className="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
+                  value={formData.variant_id}
+                  onChange={(e) => setFormData({ ...formData, variant_id: e.target.value })}
+                  required
+                >
+                  <option value="" disabled>Select Variant</option>
+                  {variants.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Category</label>
+              <div className="relative">
+                <select
+                  className="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
                   value={formData.category_id}
                   onChange={(e) => setFormData({ ...formData, category_id: e.target.value })}
                   required
@@ -135,9 +155,8 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
             <div>
               <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Measuring Unit</label>
               <div className="relative">
-                <Scale className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <select
-                  className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
+                  className="w-full pl-4 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 appearance-none font-medium"
                   value={formData.unit_of_measurement_id}
                   onChange={(e) => setFormData({ ...formData, unit_of_measurement_id: e.target.value })}
                   required

@@ -75,7 +75,7 @@ const Product: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Package className="w-7 h-7 text-eco-600" /> Central Product Catalog
+            <Package className="w-7 h-7 text-eco-600" /> Product
           </h1>
           <p className="text-gray-500 text-sm mt-1">Catalog and manage your business assets and materials.</p>
         </div>
@@ -104,7 +104,7 @@ const Product: React.FC = () => {
           </div>
           <button onClick={() => { setSelectedProduct(null); setServerErrors(null); setModalOpen(true); }} className="bg-eco-600 hover:bg-eco-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-eco-200 active:scale-95">
             <Plus className="w-5 h-5" />
-            <span>New Asset</span>
+            <span>Product</span>
           </button>
         </div>
       </div>
@@ -136,6 +136,9 @@ const Product: React.FC = () => {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('category_name')}>
                   <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('variant_name')}>
+                  <div className="flex items-center gap-2">Variant <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('product_type')}>
                   <div className="flex items-center gap-2">Type <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
@@ -174,6 +177,11 @@ const Product: React.FC = () => {
                           <div className="flex items-center gap-1.5 mt-0.5">
                           </div>
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        {product.variant.name || ' '}
                       </div>
                     </td>
                     <td className="px-6 py-4">
