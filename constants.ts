@@ -41,6 +41,7 @@ export const NAV_STRUCTURE: NavItem[] = [
             { label: 'Stock', path: '/stock_products', icon: Boxes, resource: 'StockProduct', description: 'Manage product stock levels' },
             { label: 'Adjustments', path: '/adjustment_products', icon: SlidersHorizontal, resource: 'AdjustmentProduct', description: 'Manage stock adjustments' },
             { label: 'Categories', path: '/categories', icon: Tags, resource: 'Category', description: 'Organize products by category' },
+            { label: 'Variants', path: '/variants', icon: Tags, resource: 'Variant', description: 'Organize products by variant' },
             { label: 'Units', path: '/units', icon: Scale, resource: 'UnitOfMeasurement', description: 'Manage measurement units' },
         ]
     },

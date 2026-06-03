@@ -8,6 +8,7 @@ import Product from './pages/product/Product';
 import User from './pages/user/UserList';
 import Profile from './pages/user/UserProfile';
 import Category from './pages/category/Category';
+import Variant from './pages/variant/Variant';
 import UnitList from './pages/unit/UnitList';
 import RoleList from './pages/role/RoleList';
 import RoleForm from './pages/role/RoleForm';
@@ -132,6 +133,12 @@ const App: React.FC = () => {
 					<Route path="/categories" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Category">
 							<Category />
+						</ProtectedRoute>
+					} />
+
+					<Route path="/variants" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Variant">
+							<Variant />
 						</ProtectedRoute>
 					} />
 

@@ -50,9 +50,18 @@ export interface User {
 export interface Category {
   id: string;
   name: string;
-  sku: string;
+  code?: string;
   description?: string;
   created_at: string;
+}
+
+export interface Variant {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string;
+  created_at: string;
+  updated_at?: string;
 }
 
 export interface Province {
