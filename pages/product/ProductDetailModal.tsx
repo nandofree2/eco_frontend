@@ -128,9 +128,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
               </button>
             )}
           </div>
-          <button onClick={onClose} className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-black text-xs uppercase tracking-widest rounded-xl hover:bg-gray-50 active:scale-95 transition-all shadow-sm">
-            Close
-          </button>
+
         </div>
       </div>
     </div>

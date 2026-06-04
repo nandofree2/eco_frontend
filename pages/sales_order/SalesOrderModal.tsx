@@ -31,6 +31,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
   const [taxInclude, setTaxInclude] = useState(false);
   const [discountPrice, setDiscountPrice] = useState<number>(0);
   const [taxPrice, setTaxPrice] = useState<number>(0);
+  const [shippingPrice, setShippingPrice] = useState<number>(0);
   const [items, setItems] = useState<Partial<SalesOrderItem>[]>([]);
   const [deletedItemIds, setDeletedItemIds] = useState<string[]>([]);
 
@@ -48,9 +49,10 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
 
   const safeDiscount = Math.min(sanitizeNumber(discountPrice), subtotal);
   const safeTax = sanitizeNumber(taxPrice);
+  const safeShipping = sanitizeNumber(shippingPrice);
   const grandTotal = taxInclude
     ? subtotal - safeDiscount
-    : subtotal - safeDiscount + safeTax;
+    : subtotal - safeDiscount + safeTax + safeShipping;
 
   useEffect(() => {
     if (isOpen) {
@@ -61,6 +63,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setDescription(order.description || '');
         setTaxInclude(order.tax_include || false);
         setDiscountPrice(order.discount_price || 0);
+        setShippingPrice(order.shipping_price || 0);
         setTaxPrice(order.tax_price || 0);
         const mappedItems = (order.sales_order_items || []).map(item => ({
           ...item,
@@ -75,6 +78,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setDescription('');
         setTaxInclude(false);
         setDiscountPrice(0);
+        setShippingPrice(0);
         setTaxPrice(0);
         setItems([{ product_id: '', quantity: 1, price: 0, total_price: 0 }]);
         setDeletedItemIds([]);
@@ -114,6 +118,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
     if (discountPrice < 0) newErrors.discount_price = 'Discount cannot be negative';
     if (discountPrice > subtotal) newErrors.discount_price = 'Discount exceeds subtotal';
     if (taxPrice < 0) newErrors.tax_price = 'Tax cannot be negative';
+    if (shippingPrice < 0) newErrors.shipping_price = 'Shipping cannot be negative';
     if (grandTotal < 0) newErrors.grand_total = 'Grand total cannot be negative';
 
     setErrors(newErrors);
@@ -149,6 +154,8 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
       description,
       tax_include: taxInclude,
       discount_price: safeDiscount,
+      shipping_price: safeShipping,
+
       tax_price: taxInclude ? 0 : safeTax,
       total_price: Math.round(subtotal * 100) / 100,
       grand_total: Math.round(grandTotal * 100) / 100,
@@ -434,19 +441,24 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
                     <Percent className="w-3.5 h-3.5 text-orange-400" /> Discount
                   </span>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
-                    value={discountPrice || ''}
-                    onChange={(e) => setDiscountPrice(sanitizeNumber(e.target.value))}
-                    className={`w-40 px-2 py-1 bg-white border ${errors.discount_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`}
-                    placeholder="0"
-                  />
+                  <input type="number" min="0" step="100" value={discountPrice || ''} onChange={(e) => setDiscountPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.discount_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
                 </div>
                 {errors.discount_price && (
                   <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 justify-end">
                     <AlertCircle className="w-2.5 h-2.5" /> {errors.discount_price}
+                  </p>
+                )}
+
+                {/* Shipping */}
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
+                    <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Shipping
+                  </span>
+                  <input type="number" min="0" step="100" value={shippingPrice || ''} onChange={(e) => setShippingPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.shipping_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
+                </div>
+                {errors.shipping_price && (
+                  <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 justify-end">
+                    <AlertCircle className="w-2.5 h-2.5" /> {errors.shipping_price}
                   </p>
                 )}
 
@@ -459,15 +471,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   {taxInclude ? (
                     <span className="text-xs font-bold text-gray-400 italic">Included in price</span>
                   ) : (
-                    <input
-                      type="number"
-                      min="0"
-                      step="100"
-                      value={taxPrice || ''}
-                      onChange={(e) => setTaxPrice(sanitizeNumber(e.target.value))}
-                      className={`w-40 px-2 py-1 bg-white border ${errors.tax_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`}
-                      placeholder="0"
-                    />
+                    <input type="number" min="0" step="100" value={taxPrice || ''} onChange={(e) => setTaxPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.tax_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
                   )}
                 </div>
                 {errors.tax_price && (

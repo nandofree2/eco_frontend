@@ -164,6 +164,24 @@ export const useSalesOrder = () => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   };
 
+  const [approveLoading, setApproveLoading] = useState(false);
+
+  const handleApprove = async (id: string) => {
+    setApproveLoading(true);
+    try {
+      await api.sales_orders.approve(id);
+      addToast('success', 'Sales order approved successfully.');
+      if (orderForDetail) {
+        setOrderForDetail({ ...orderForDetail, approval_status: 'approved' as any });
+      }
+      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to approve sales order.');
+    } finally {
+      setApproveLoading(false);
+    }
+  };
+
   return {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
@@ -171,8 +189,8 @@ export const useSalesOrder = () => {
     isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
     isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
     orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
-    actionLoading, deleteLoading, serverErrors, setServerErrors,
-    toasts, loadOrders, handleCreateOrUpdate, confirmDelete,
+    actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
+    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
     toggleSort, handlePageChange, formatDate, formatCurrency
   };
 };
