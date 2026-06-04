@@ -1,15 +1,19 @@
 import React from 'react';
 import { SalesOrder } from '../../types';
-import { X, ShoppingCart, Building2, Calendar, FileText, ArrowRight, Package, Users, Receipt, Percent, DollarSign, CheckCircle2 } from 'lucide-react';
+import { X, ShoppingCart, Building2, Calendar, FileText, ArrowRight, Package, Users, Receipt, Percent, DollarSign, CheckCircle2, Edit2, Trash2 } from 'lucide-react';
 
 interface SalesOrderDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   order: SalesOrder | null;
+  onEdit?: (order: SalesOrder) => void;
+  onDelete?: (order: SalesOrder) => void;
+  onApprove?: (id: string) => void;
+  approveLoading?: boolean;
 }
 
 const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
-  isOpen, onClose, order
+  isOpen, onClose, order, onEdit, onDelete, onApprove, approveLoading
 }) => {
   if (!isOpen || !order) return null;
 
@@ -146,6 +150,12 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
+                  <DollarSign className="w-3.5 h-3.5 text-orange-400" /> Shipping
+                </span>
+                <span className="text-sm font-bold text-orange-600">+ {formatCurrency(order.shipping_price)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
                   <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Tax
                   {order.tax_include && <span className="text-[8px] bg-eco-100 text-eco-700 px-1.5 py-0.5 rounded font-black">INCL</span>}
                 </span>
@@ -174,15 +184,28 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
 
         {/* Footer */}
         <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-100">
-          <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-            ID: <span className="font-mono">{order.id}</span>
+
+          <div className="flex items-center gap-3">
+            {order.approval_status !== 'approved' && onApprove && (
+              <button
+                onClick={() => onApprove(order.id)}
+                disabled={approveLoading}
+                className="px-4 py-2.5 bg-green-50 text-green-600 hover:bg-green-100 border border-transparent hover:border-green-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm"
+              >
+                <CheckCircle2 className="w-4 h-4" /> {approveLoading ? 'Approving...' : 'Approve'}
+              </button>
+            )}
+            {order.approval_status !== 'approved' && onEdit && (
+              <button onClick={() => onEdit(order)} className="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-transparent hover:border-blue-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
+                <Edit2 className="w-4 h-4" /> Edit
+              </button>
+            )}
+            {order.approval_status !== 'approved' && onDelete && (
+              <button onClick={() => onDelete(order)} className="px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 border border-transparent hover:border-red-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
+                <Trash2 className="w-4 h-4" /> Delete
+              </button>
+            )}
           </div>
-          <button
-            onClick={onClose}
-            className="bg-gray-900 hover:bg-black text-white px-4 py-1.5 rounded-lg font-bold text-xs transition-all active:scale-95 flex items-center gap-1.5"
-          >
-            Close View <ArrowRight className="w-3.5 h-3.5" />
-          </button>
         </div>
       </div>
     </div>

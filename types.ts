@@ -202,9 +202,11 @@ export interface SalesOrder {
   description?: string;
   total_price: number;
   discount_price: number;
+  shipping_price: number;
   tax_price: number;
   grand_total: number;
   tax_include: boolean;
+  approval_status: ApprovalStatus;
   sales_order_items: SalesOrderItem[];
   created_at: string;
   updated_at: string;

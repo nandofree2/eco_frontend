@@ -48,7 +48,7 @@ const Customer: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Users className="w-7 h-7 text-eco-600" /> Registry of Customers
+            <Users className="w-7 h-7 text-eco-600" /> Customers
           </h1>
           <p className="text-gray-500 text-sm mt-1">Manage customer profiles and loyalty tiers.</p>
         </div>
@@ -112,6 +112,7 @@ const Customer: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Membership</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Receivable</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Payable</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Ordered Amount</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Actions</th>
               </tr>
             </thead>
@@ -135,9 +136,7 @@ const Customer: React.FC = () => {
                   <tr key={customer.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-eco-600/10 text-eco-600 flex items-center justify-center font-bold text-sm shadow-sm border border-eco-600/10 uppercase tracking-tighter">
-                          {customer.name.charAt(0)}
-                        </div>
+
                         <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors capitalize">{customer.name}</span>
                       </div>
                     </td>
@@ -163,15 +162,20 @@ const Customer: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="space-y-0.5">
                         <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Banknote className="w-3.5 h-3.5 text-gray-400" /> {customer.receivable}
+                          Rp {customer.receivable}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-0.5">
                         <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          <Banknote className="w-3.5 h-3.5 text-gray-400" /> {customer.payable}
+                          Rp {customer.payable}
                         </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        Rp {customer.ordered_amount}
                       </div>
                     </td>
                     <td className="px-6 py-4">

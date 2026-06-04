@@ -606,6 +606,10 @@ export const api = {
     },
     delete: async (id: string) => {
       await request(`/sales_orders/${id}`, { method: 'DELETE' });
+    },
+    approve: async (id: string) => {
+      const json = await request(`/sales_orders/${id}/approve`, { method: 'POST' });
+      return mapAttributes(json.data || json);
     }
   }
 };
