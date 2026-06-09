@@ -19,6 +19,7 @@ import Customer from './pages/customer/Customer';
 import StockProduct from './pages/stock_product/StockProduct';
 import AdjustmentProduct from './pages/adjustment_product/AdjustmentProduct';
 import SalesOrder from './pages/sales_order/SalesOrder';
+import DeliveryOrder from './pages/delivery_order/DeliveryOrder';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
 // Import singleton ability to ensure it's hydrated globally
@@ -211,6 +212,11 @@ const App: React.FC = () => {
 					<Route path="/sales_orders" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="SalesOrder">
 							<SalesOrder />
+						</ProtectedRoute>
+					} />
+					<Route path="/delivery_orders" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="DeliveryOrder">
+							<DeliveryOrder />
 						</ProtectedRoute>
 					} />
 

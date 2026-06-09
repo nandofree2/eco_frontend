@@ -66,6 +66,7 @@ export const NAV_STRUCTURE: NavItem[] = [
         children: [
             { label: 'Customers', path: '/customers', icon: Users, resource: 'Customer', description: 'Manage your customer database' },
             { label: 'Sales Orders', path: '/sales_orders', icon: ShoppingCart, resource: 'SalesOrder', description: 'Manage sales orders and transactions' },
+            { label: 'Delivery Orders', path: '/delivery_orders', icon: ShoppingCart, resource: 'DeliveryOrder', description: 'Manage delivery orders and transactions' },
         ]
     },
     {

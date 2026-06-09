@@ -1,4 +1,4 @@
-import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder } from '../types';
+import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER;
@@ -111,6 +111,16 @@ const mapAttributes = (item: any) => {
     };
   });
 
+  const delivery_order_items = attrs.delivery_order_items?.map((item: any) => {
+    const itemAttrs = item.attributes || item;
+    return {
+      id: item.id,
+      ...itemAttrs,
+      product: getNested(itemAttrs.product),
+      sales_order_item: getNested(itemAttrs.sales_order_item)
+    };
+  });
+
   return {
     id: item.id,
     ...attrs,
@@ -119,7 +129,10 @@ const mapAttributes = (item: any) => {
     membership,
     adjustment_product_items,
     sales_order_items,
+    delivery_order_items,
     code: attrs.code,
+    sales_order_id: attrs.sales_order_id || getNested(attrs.sales_order)?.id,
+    sales_order_code: attrs.sales_order_code || getNested(attrs.sales_order)?.code,
     cover_image_url: attrs.cover_image_url || attrs.cover_image,
     preview_images_urls: attrs.preview_images_urls || attrs.preview_images || attrs.preview_image_urls,
     category: getNested(attrs.category),
@@ -610,6 +623,59 @@ export const api = {
     approve: async (id: string) => {
       const json = await request(`/sales_orders/${id}/approve`, { method: 'POST' });
       return mapAttributes(json.data || json);
+    },
+    sales_order_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+      const params = new URLSearchParams();
+      if (q) params.append('q', q);
+      const json = await request(`/sales_orders/sales_order_list?${params.toString()}`);
+      return json.data || [];
+    },
+    sales_order_item_list: async (q: string = '', salesOrderId: string, selectedSalesOrderItemIds?: string[]): Promise<{ id: string, name: string, sales_order_quantity?: number }[]> => {
+      const params = new URLSearchParams();
+      if (salesOrderId) params.append('sales_order_id', salesOrderId);
+      if (q) params.append('q', q);
+      console.log("selectedSalesOrderItemIds", selectedSalesOrderItemIds);
+      if (selectedSalesOrderItemIds && selectedSalesOrderItemIds.length > 0) {
+        params.append('selected_sales_order_item_ids', selectedSalesOrderItemIds.join(','));
+      }
+      const json = await request(`/sales_order_items/sales_order_item_list?${params.toString()}`);
+      return (json.data || []).map((item: any) => ({
+        id: item.id || item.uuid,
+        name: item.name || item.product_name || `Item ${item.id}`,
+        sales_order_quantity: item.sales_order_quantity || item.quantity
+      }));
     }
+  },
+  delivery_orders: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string): Promise<PaginatedResponse<DeliveryOrder>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[description_or_sales_order_coder_or_code_cont]', query);
+      if (branchId) params.append('q[branch_id_eq]', branchId);
+      if (customerId) params.append('q[customer_id_eq]', customerId);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/delivery_orders?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<DeliveryOrder> => {
+      const json = await request(`/delivery_orders/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: any) => {
+      const json = await request('/delivery_orders', { method: 'POST', body: JSON.stringify({ delivery_order: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: any) => {
+      const json = await request(`/delivery_orders/${id}`, { method: 'PATCH', body: JSON.stringify({ delivery_order: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/delivery_orders/${id}`, { method: 'DELETE' });
+    },
+    approve: async (id: string) => {
+      const json = await request(`/delivery_orders/${id}/approve`, { method: 'POST' });
+      return mapAttributes(json.data || json);
+    },
   }
 };
