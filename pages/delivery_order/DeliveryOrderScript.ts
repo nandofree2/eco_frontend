@@ -1,0 +1,196 @@
+import { useEffect, useState, useCallback } from 'react';
+import { api } from '../../services/api';
+import { DeliveryOrder, PaginationMeta, Branch, Customer } from '../../types';
+
+interface Toast {
+  id: string;
+  type: 'success' | 'error' | 'warning';
+  message: string;
+}
+
+export const useDeliveryOrder = () => {
+  const [orders, setOrders] = useState<DeliveryOrder[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [branchFilter, setBranchFilter] = useState<string>('');
+  const [customerFilter, setCustomerFilter] = useState<string>('');
+  const [sortBy, setSortBy] = useState('created_at desc');
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [perPage] = useState(10);
+  const [pagination, setPagination] = useState<PaginationMeta | null>(null);
+
+  // Modal States
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [isDetailModalOpen, setDetailModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<DeliveryOrder | null>(null);
+  const [orderForDetail, setOrderForDetail] = useState<DeliveryOrder | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<DeliveryOrder | null>(null);
+
+  // Loading & Error States
+  const [actionLoading, setActionLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [serverErrors, setServerErrors] = useState<Record<string, string[]> | null>(null);
+
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const addToast = useCallback((type: 'success' | 'error' | 'warning', message: string) => {
+    const id = Date.now().toString();
+    setToasts(prev => [...prev, { id, type, message }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
+  }, []);
+
+  const loadOrders = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, branch = branchFilter, customer = customerFilter) => {
+    setLoading(true);
+    try {
+      const response = await api.delivery_orders.list(search, sort, page, perPage, branch, customer);
+      setOrders(response.data);
+      setPagination(response.meta);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to load delivery orders.');
+    } finally {
+      setLoading(false);
+    }
+  }, [searchTerm, sortBy, currentPage, perPage, branchFilter, customerFilter, addToast]);
+
+  const loadBranches = useCallback(async () => {
+    try {
+      const data = await api.branches.branch_list();
+      setBranches(data);
+    } catch (err) {
+      console.error('Failed to load branches:', err);
+    }
+  }, []);
+
+  const loadCustomers = useCallback(async () => {
+    try {
+      const response = await api.customers.list('', '', 1, 100);
+      setCustomers(response.data);
+    } catch (err) {
+      console.error('Failed to load customers:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadBranches();
+    loadCustomers();
+  }, [loadBranches, loadCustomers]);
+
+  // Debounced search/filter
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setCurrentPage(1);
+      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
+    }, 500);
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, sortBy, branchFilter, customerFilter]);
+
+  // Page changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
+    }
+  }, [currentPage]);
+
+  const handleCreateOrUpdate = async (formData: any) => {
+    setActionLoading(true);
+    setServerErrors(null);
+    try {
+      if (selectedOrder) {
+        await api.delivery_orders.update(selectedOrder.id, formData);
+        addToast('success', 'delivery order updated successfully.');
+      } else {
+        await api.delivery_orders.create(formData);
+        addToast('success', 'New delivery order created.');
+      }
+      setModalOpen(false);
+      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
+    } catch (err: any) {
+      if (err.status === 422 && err.errors) {
+        setServerErrors(err.errors);
+        addToast('error', 'Validation failed.');
+      } else {
+        addToast('error', err.message || 'Action failed.');
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!orderToDelete) return;
+    setDeleteLoading(true);
+    try {
+      await api.delivery_orders.delete(orderToDelete.id);
+      addToast('success', 'Delivery order removed.');
+      setDeleteModalOpen(false);
+      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
+    } catch (err: any) {
+      const type = err.status === 422 ? 'warning' : 'error';
+      addToast(type, err.message || 'Delete failed.');
+    } finally {
+      setDeleteLoading(false);
+      setOrderToDelete(null);
+    }
+  };
+
+  const toggleSort = (field: string) => {
+    setSortBy(prev => {
+      const [currField, currDir] = prev.split(' ');
+      const newDir = currField === field && currDir === 'asc' ? 'desc' : 'asc';
+      return `${field} ${newDir}`;
+    });
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || (pagination && page > pagination.total_pages)) return;
+    setCurrentPage(page);
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '---';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+  };
+
+  const formatCurrency = (value?: number) => {
+    if (value == null || isNaN(value)) return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  };
+
+  const [approveLoading, setApproveLoading] = useState(false);
+
+  const handleApprove = async (id: string) => {
+    setApproveLoading(true);
+    try {
+      await api.delivery_orders.approve(id);
+      addToast('success', 'Delivery order approved successfully.');
+      if (orderForDetail) {
+        setOrderForDetail({ ...orderForDetail, approval_status: 'approved' as any });
+      }
+      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to approve delivery order.');
+    } finally {
+      setApproveLoading(false);
+    }
+  };
+
+  return {
+    orders, branches, customers, loading, searchTerm, setSearchTerm,
+    branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
+    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
+    isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
+    isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
+    orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
+    actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
+    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
+    toggleSort, handlePageChange, formatDate, formatCurrency
+  };
+};

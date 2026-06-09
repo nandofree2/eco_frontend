@@ -192,6 +192,15 @@ export interface SalesOrderItem {
   total_price: number;
 }
 
+export interface DeliveryOrderItem {
+  id?: string;
+  sales_order_item_id: string;
+  product_id?: string;
+  product_name?: string;
+  sales_order_quantity?: number;
+  quantity: number;
+}
+
 export interface SalesOrder {
   id: string;
   code?: string;
@@ -208,6 +217,22 @@ export interface SalesOrder {
   tax_include: boolean;
   approval_status: ApprovalStatus;
   sales_order_items: SalesOrderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeliveryOrder {
+  id: string;
+  code?: string;
+  branch_id: string;
+  branch_name?: string;
+  customer_id: string;
+  customer_name?: string;
+  sales_order_id?: string;
+  sales_order_code?: string;
+  description?: string;
+  approval_status: ApprovalStatus;
+  delivery_order_items: DeliveryOrderItem[];
   created_at: string;
   updated_at: string;
 }
