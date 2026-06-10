@@ -18,7 +18,7 @@ const SalesOrder: React.FC = () => {
     isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen,
     selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
     orderToDelete, setOrderToDelete, actionLoading, deleteLoading,
-    serverErrors, setServerErrors, toasts, loadOrders,
+    serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus,
     handleCreateOrUpdate, confirmDelete, handleApprove, toggleSort, handlePageChange,
     formatDate, formatCurrency, currentPage, perPage, approveLoading
   } = useSalesOrder();
@@ -164,6 +164,7 @@ const SalesOrder: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('grand_total')}>
                   <div className="flex items-center justify-end gap-2">Grand Total <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -209,6 +210,14 @@ const SalesOrder: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-sm font-black text-eco-700">{formatCurrency(order.grand_total)}</span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.approval_status === ApprovalStatus.Approved ? 'bg-green-50 text-green-700 border-green-100' :
+                        order.approval_status === ApprovalStatus.Rejected ? 'bg-red-50 text-red-700 border-red-100' :
+                          'bg-gray-100 text-gray-700 border-gray-200'
+                        }`}>
+                        {order.approval_status?.toUpperCase() || 'DRAFT'}
+                      </span>
                     </td>
                   </tr>
                 ))

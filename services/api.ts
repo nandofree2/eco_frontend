@@ -624,11 +624,15 @@ export const api = {
       const json = await request(`/sales_orders/${id}/approve`, { method: 'POST' });
       return mapAttributes(json.data || json);
     },
-    sales_order_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+    sales_order_list: async (q: string = ''): Promise<{ id: string, name: string, customer_name: string }[]> => {
       const params = new URLSearchParams();
       if (q) params.append('q', q);
       const json = await request(`/sales_orders/sales_order_list?${params.toString()}`);
-      return json.data || [];
+      return (json.data || []).map((item: any) => ({
+        id: item.id,
+        name: item.code,
+        customer_name: item.customer_name
+      }));
     },
     sales_order_item_list: async (q: string = '', salesOrderId: string, selectedSalesOrderItemIds?: string[]): Promise<{ id: string, name: string, sales_order_quantity?: number }[]> => {
       const params = new URLSearchParams();
@@ -649,9 +653,9 @@ export const api = {
   delivery_orders: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string): Promise<PaginatedResponse<DeliveryOrder>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[description_or_sales_order_coder_or_code_cont]', query);
+      if (query) params.append('q[description_or_sales_order_code_or_code_cont]', query);
       if (branchId) params.append('q[branch_id_eq]', branchId);
-      if (customerId) params.append('q[customer_id_eq]', customerId);
+      if (customerId) params.append('q[sales_order_customer_id_eq]', customerId);
       if (sort) params.append('q[s]', sort);
       params.append('page', page.toString());
       params.append('per_page', perPage.toString());

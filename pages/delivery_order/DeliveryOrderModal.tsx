@@ -169,7 +169,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                     onSearch={api.sales_orders.sales_order_list}
                     value={salesOrderId}
 
-                    onChange={(id, name) => {
+                    onChange={(id, name, extraData) => {
                       if (id !== salesOrderId) {
                         setItems([]);
                         setDeletedItemIds(prev => {
@@ -178,7 +178,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                         });
                       }
                       setSalesOrderId(id);
-                      setSalesOrderName(name || '');
+                      setCustomerName(extraData?.customer_name || '');
                     }}
 
                     placeholder="Search Sales Order..."
@@ -195,6 +195,17 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                 </div>
 
                 {/* Description */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-eco-600" /> Customer Name
+                  </label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    readOnly
+                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 focus:ring-eco-500/20 rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium"
+                  />
+                </div>
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-eco-600" /> Description

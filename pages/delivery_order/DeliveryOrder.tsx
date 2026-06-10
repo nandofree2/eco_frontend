@@ -8,18 +8,15 @@ import {
 } from 'lucide-react';
 import DeliveryOrderModal from './DeliveryOrderModal';
 import DeliveryOrderDetailModal from './DeliveryOrderDetailModal';
-import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 
 const DeliveryOrder: React.FC = () => {
   const {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, pagination, isModalOpen, setModalOpen,
-    isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen,
-    selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
-    orderToDelete, setOrderToDelete, actionLoading, deleteLoading,
-    serverErrors, setServerErrors, toasts, loadOrders,
-    handleCreateOrUpdate, confirmDelete, handleApprove, toggleSort, handlePageChange,
+    sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
+    actionLoading, serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus,
+    handleCreateOrUpdate, handleApprove, toggleSort, handlePageChange,
     formatDate, formatCurrency, currentPage, perPage, approveLoading
   } = useDeliveryOrder();
 
@@ -158,9 +155,11 @@ const DeliveryOrder: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
                   <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Sales Order SKU</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Branch</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Customer</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Items</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Approval Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -191,6 +190,11 @@ const DeliveryOrder: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                        <Building2 className="w-4 h-4 text-gray-400" /> {order.sales_order_code || '---'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                         <Building2 className="w-4 h-4 text-gray-400" /> {order.branch_name || '---'}
                       </div>
                     </td>
@@ -202,6 +206,14 @@ const DeliveryOrder: React.FC = () => {
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-white text-gray-900 border border-gray-200 shadow-sm">
                         {order.delivery_order_items?.length || 0} items
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.approval_status === ApprovalStatus.Approved ? 'bg-green-50 text-green-700 border-green-100' :
+                        order.approval_status === ApprovalStatus.Rejected ? 'bg-red-50 text-red-700 border-red-100' :
+                          'bg-gray-100 text-gray-700 border-gray-200'
+                        }`}>
+                        {order.approval_status?.toUpperCase() || 'DRAFT'}
                       </span>
                     </td>
                   </tr>
@@ -269,16 +281,6 @@ const DeliveryOrder: React.FC = () => {
         onApprove={handleApprove}
         approveLoading={approveLoading}
         onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
-        onDelete={(order) => { setOrderToDelete(order); setDetailModalOpen(false); setDeleteModalOpen(true); }}
-      />
-
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Delivery Order"
-        message="Are you sure you want to remove this delivery order? This action cannot be undone."
-        loading={deleteLoading}
       />
     </div>
   );

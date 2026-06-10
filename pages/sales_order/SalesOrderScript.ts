@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../services/api';
-import { SalesOrder, PaginationMeta, Branch, Customer } from '../../types';
+import { SalesOrder, PaginationMeta, Branch, Customer, ApprovalStatus } from '../../types';
 
 interface Toast {
   id: string;
@@ -191,6 +191,6 @@ export const useSalesOrder = () => {
     orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
     actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
     toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
-    toggleSort, handlePageChange, formatDate, formatCurrency
+    toggleSort, handlePageChange, formatDate, formatCurrency, ApprovalStatus
   };
 };
