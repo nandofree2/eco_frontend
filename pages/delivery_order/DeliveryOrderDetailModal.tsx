@@ -7,13 +7,12 @@ interface DeliveryOrderDetailModalProps {
   onClose: () => void;
   order: DeliveryOrder | null;
   onEdit?: (order: DeliveryOrder) => void;
-  onDelete?: (order: DeliveryOrder) => void;
   onApprove?: (id: string) => void;
   approveLoading?: boolean;
 }
 
 const DeliveryOrderDetailModal: React.FC<DeliveryOrderDetailModalProps> = ({
-  isOpen, onClose, order, onEdit, onDelete, onApprove, approveLoading
+  isOpen, onClose, order, onEdit, onApprove, approveLoading
 }) => {
   if (!isOpen || !order) return null;
 
@@ -149,11 +148,6 @@ const DeliveryOrderDetailModal: React.FC<DeliveryOrderDetailModalProps> = ({
             {order.approval_status !== 'approved' && onEdit && (
               <button onClick={() => onEdit(order)} className="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-transparent hover:border-blue-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
                 <Edit2 className="w-4 h-4" /> Edit
-              </button>
-            )}
-            {order.approval_status !== 'approved' && onDelete && (
-              <button onClick={() => onDelete(order)} className="px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 border border-transparent hover:border-red-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
-                <Trash2 className="w-4 h-4" /> Delete
               </button>
             )}
           </div>

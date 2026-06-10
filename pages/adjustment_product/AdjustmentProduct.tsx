@@ -129,8 +129,8 @@ const AdjustmentProduct: React.FC = () => {
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Target Branch</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Adjustment Type</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Workflow Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">SKU Count</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Total Items</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Approval Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Operation Control</th>
               </tr>
             </thead>
@@ -173,18 +173,17 @@ const AdjustmentProduct: React.FC = () => {
                         {adj.adjustment_type === AdjustmentType.In ? 'In' : 'Out'}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${adj.approval_status === ApprovalStatus.Approved ? 'bg-green-50 text-green-700 border-green-100' :
-                        adj.approval_status === ApprovalStatus.Pending ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                          adj.approval_status === ApprovalStatus.Rejected ? 'bg-red-50 text-red-700 border-red-100' :
-                            'bg-gray-100 text-gray-700 border-gray-200'
-                        }`}>
-                        {adj.approval_status?.toUpperCase() || 'DRAFT'}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 text-center">
                       <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-white text-gray-900 border border-gray-200 shadow-sm">
                         {adj.adjustment_product_items?.length || 0} items
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${adj.approval_status === ApprovalStatus.Approved ? 'bg-green-50 text-green-700 border-green-100' :
+                        adj.approval_status === ApprovalStatus.Rejected ? 'bg-red-50 text-red-700 border-red-100' :
+                          'bg-gray-100 text-gray-700 border-gray-200'
+                        }`}>
+                        {adj.approval_status?.toUpperCase() || 'DRAFT'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">

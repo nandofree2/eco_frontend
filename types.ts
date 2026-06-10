@@ -159,7 +159,6 @@ export enum AdjustmentType {
 
 export enum ApprovalStatus {
   Draft = "draft",
-  Pending = "pending",
   Approved = "approved",
   Rejected = "rejected",
 }
