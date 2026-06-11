@@ -39,8 +39,7 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">Order Details</h2>
-              <p className="text-eco-100 text-[9px] font-bold uppercase tracking-widest">{order.code || 'Sales Order'}</p>
+              <h2 className="text-base font-bold text-white leading-tight">Order Details - [ {order.code || 'Sales Order'} ]</h2>
             </div>
           </div>
           <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg">
@@ -179,9 +178,16 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Created At</span>
+                <span className="text-xs font-bold text-gray-700">{formatDate(order.created_at)}</span>
+
               </div>
-              <span className="text-xs font-bold text-gray-700">{formatDate(order.created_at)}</span>
+              <div className="flex items-center gap-1.5 text-gray-400">
+                <Calendar className="w-3.5 h-3.5" />
+                <span className="text-[10px] font-bold uppercase tracking-wider">Payment Deadline</span>
+                <span className="text-xs font-bold text-gray-700">{order.payment_deadline} days</span>
+              </div>
             </div>
+
           </div>
         </div>
 
