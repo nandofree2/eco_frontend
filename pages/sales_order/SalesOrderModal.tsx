@@ -236,7 +236,18 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   <div className="relative">
                     <select
                       value={branchId}
-                      onChange={(e) => setBranchId(e.target.value)}
+                      onChange={(e) => {
+                        const newBranchId = e.target.value;
+                        if (newBranchId !== branchId) {
+                          // Sanitize: mark existing saved items for deletion, clear list
+                          setDeletedItemIds(prev => {
+                            const existingIds = items.map(i => i.id).filter(Boolean) as string[];
+                            return [...prev, ...existingIds];
+                          });
+                          setItems([{ product_id: '', quantity: 1, price: 0, total_price: 0 }]);
+                        }
+                        setBranchId(newBranchId);
+                      }}
                       className={`w-full pl-3 pr-8 py-1.5 bg-gray-50 border ${errors.branch_id || serverErrors?.branch_id ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium appearance-none`}
                       disabled={branchesLoading}
                     >
@@ -331,6 +342,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-6 hidden md:grid">
                     <div className="md:col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
                     <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
                     <div className="md:col-span-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Price</div>
                     <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</div>
                   </div>
@@ -349,7 +361,12 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                       {/* Product */}
                       <div className="md:col-span-5">
                         <SearchableDropdown
-                          onSearch={api.products.product_list}
+                          onSearch={(q) => {
+                            const selectedProductIds = items
+                              .map((i, idx) => idx !== index ? i.product_id : null)
+                              .filter(Boolean) as string[];
+                            return api.products.product_list(q, selectedProductIds);
+                          }}
                           value={item.product_id || ''}
                           onChange={(id, name) => {
                             setItems(prev => {
