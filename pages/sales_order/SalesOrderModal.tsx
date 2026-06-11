@@ -29,6 +29,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
   const [customerName, setCustomerName] = useState('');
   const [description, setDescription] = useState('');
   const [taxInclude, setTaxInclude] = useState(false);
+  const [paymentDeadline, setPaymentDeadline] = useState<number | ''>('');
   const [discountPrice, setDiscountPrice] = useState<number>(0);
   const [taxPrice, setTaxPrice] = useState<number>(0);
   const [shippingPrice, setShippingPrice] = useState<number>(0);
@@ -62,6 +63,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setCustomerName(order.customer_name || '');
         setDescription(order.description || '');
         setTaxInclude(order.tax_include || false);
+        setPaymentDeadline((order as any).payment_deadline ?? '');
         setDiscountPrice(order.discount_price || 0);
         setShippingPrice(order.shipping_price || 0);
         setTaxPrice(order.tax_price || 0);
@@ -77,6 +79,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setCustomerName('');
         setDescription('');
         setTaxInclude(false);
+        setPaymentDeadline('');
         setDiscountPrice(0);
         setShippingPrice(0);
         setTaxPrice(0);
@@ -104,6 +107,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!branchId) newErrors.branch_id = 'Branch is required';
     if (!customerId) newErrors.customer_id = 'Customer is required';
+    if (paymentDeadline === '' || Number(paymentDeadline) <= 0) newErrors.payment_deadline = 'Payment deadline is required (must be > 0)';
 
     if (items.length === 0) {
       newErrors.items = 'At least one item is required';
@@ -153,9 +157,9 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
       customer_id: customerId,
       description,
       tax_include: taxInclude,
+      payment_deadline: Number(paymentDeadline),
       discount_price: safeDiscount,
       shipping_price: safeShipping,
-
       tax_price: taxInclude ? 0 : safeTax,
       total_price: Math.round(subtotal * 100) / 100,
       grand_total: Math.round(grandTotal * 100) / 100,
@@ -227,7 +231,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
             <div className="space-y-3">
               <h3 className="text-[11px] font-bold text-gray-900 uppercase tracking-wider border-b border-gray-100 pb-1">General Information</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
                 {/* Branch */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -297,6 +301,30 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                     className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 focus:ring-eco-500/20 rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium"
                     placeholder="Order notes..."
                   />
+                </div>
+
+                {/* Payment Deadline */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Receipt className="w-3.5 h-3.5 text-eco-600" /> Payment Deadline <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={paymentDeadline}
+                      onChange={(e) => setPaymentDeadline(e.target.value === '' ? '' : parseInt(e.target.value) || '')}
+                      className={`w-full px-3 py-1.5 bg-gray-50 border ${errors.payment_deadline || serverErrors?.payment_deadline ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium`}
+                      placeholder="30"
+                    />
+                    <span className="shrink-0 px-2 py-1.5 bg-eco-50 border border-eco-200 rounded-lg text-[10px] font-black text-eco-700 uppercase tracking-wider">days</span>
+                  </div>
+                  {(errors.payment_deadline || serverErrors?.payment_deadline) && (
+                    <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 mt-0.5">
+                      <AlertCircle className="w-2.5 h-2.5" /> {errors.payment_deadline || serverErrors?.payment_deadline?.[0]}
+                    </p>
+                  )}
                 </div>
 
                 {/* Tax Include */}
