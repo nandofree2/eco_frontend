@@ -99,25 +99,29 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
 
             {/* Items header */}
             <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-              <div className="col-span-5">Product</div>
-              <div className="col-span-2 text-right">Qty</div>
-              <div className="col-span-3 text-right">Price</div>
+              <div className="col-span-4">Product</div>
+              <div className="col-span-1 text-right">Qty</div>
+              <div className="col-span-1 text-right">Delivered</div>
+              <div className="col-span-2 text-right">Price</div>
               <div className="col-span-2 text-right">Total</div>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {order.sales_order_items?.map((item, index) => (
                 <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="sm:col-span-5 flex items-center gap-2">
+                  <div className="sm:col-span-4 flex items-center gap-2">
                     <div className="w-7 h-7 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
                       <Package className="w-3.5 h-3.5" />
                     </div>
                     <p className="text-xs font-bold text-gray-900">{item.product_name || '---'}</p>
                   </div>
-                  <div className="sm:col-span-2 text-right">
+                  <div className="sm:col-span-1 text-right">
                     <span className="text-xs font-bold text-gray-700">{item.quantity}</span>
                   </div>
-                  <div className="sm:col-span-3 text-right">
+                  <div className="sm:col-span-1 text-right">
+                    <span className="text-xs font-medium text-gray-600">{item.delivered_quantity}</span>
+                  </div>
+                  <div className="sm:col-span-2 text-right">
                     <span className="text-xs font-medium text-gray-600">{formatCurrency(item.price)}</span>
                   </div>
                   <div className="sm:col-span-2 text-right">

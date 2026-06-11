@@ -265,8 +265,13 @@ export const api = {
     delete: async (id: string) => {
       await request(`/products/${id}`, { method: 'DELETE' });
     },
-    product_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
-      const json = await request(`/products/product_list?q=${encodeURIComponent(q)}`);
+    product_list: async (q: string = '', selectedProductIds?: string[]): Promise<{ id: string, name: string }[]> => {
+      const params = new URLSearchParams();
+      params.append('q', q);
+      if (selectedProductIds && selectedProductIds.length > 0) {
+        params.append('selected_product_ids', selectedProductIds.join(','));
+      }
+      const json = await request(`/products/product_list?${params.toString()}`);
       return json.data || [];
     },
     product_list_physical: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
@@ -646,7 +651,7 @@ export const api = {
       return (json.data || []).map((item: any) => ({
         id: item.id || item.uuid,
         name: item.name || item.product_name || `Item ${item.id}`,
-        sales_order_quantity: item.sales_order_quantity || item.quantity
+        sales_order_item_stock: item.sales_order_item_stock || item.item_stock
       }));
     }
   },

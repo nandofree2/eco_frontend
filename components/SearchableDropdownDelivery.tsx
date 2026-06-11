@@ -6,6 +6,7 @@ interface Option {
   name: string;
   physical_stock?: number;
   sales_order_quantity?: number;
+  sales_order_item_stock?: number;
   customer_name?: string;
 }
 
@@ -113,6 +114,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
     onChange(option.id, option.name, {
       physicalStock: option.physical_stock,
       salesOrderQuantity: option.sales_order_quantity,
+      salesOrderItemStock: option.sales_order_item_stock,
       customer_name: option.customer_name
     });
     setIsOpen(false);

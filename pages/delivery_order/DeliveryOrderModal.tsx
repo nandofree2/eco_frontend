@@ -40,7 +40,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         const mappedItems = (order.delivery_order_items || []).map(item => ({
           ...item,
           product_name: item.product_name || (item as any).product?.name || (item as any).sales_order_item?.product?.name,
-          sales_order_quantity: item.sales_order_quantity || (item as any).sales_order_item?.quantity
+          sales_order_item_stock: item.sales_order_item_stock
         }));
         setItems(mappedItems.length > 0 ? mappedItems : []);
         setDeletedItemIds([]);
@@ -68,8 +68,8 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         if (!item.sales_order_item_id) newErrors[`item_${index}_sales_order_item_id`] = 'Sales Order Item is required';
         if (!item.quantity || item.quantity <= 0) {
           newErrors[`item_${index}_quantity`] = 'Qty must be > 0';
-        } else if (item.sales_order_quantity && item.quantity > item.sales_order_quantity) {
-          newErrors[`item_${index}_quantity`] = `Max qty is ${item.sales_order_quantity}`;
+        } else if (item.sales_order_item_stock && item.quantity > item.sales_order_item_stock) {
+          newErrors[`item_${index}_quantity`] = `Max qty is ${item.sales_order_item_stock}`;
         }
       });
     }
@@ -246,7 +246,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                 {items.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-6 hidden md:grid">
                     <div className="md:col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
-                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">SO Qty</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">SO Item Stock</div>
                     <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">DO Qty</div>
                   </div>
                 )}
@@ -278,7 +278,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                                 ...newItems[index],
                                 sales_order_item_id: id,
                                 product_name: name || newItems[index].product_name,
-                                sales_order_quantity: extraData?.salesOrderQuantity || 0
+                                sales_order_item_stock: extraData?.salesOrderItemStock || 0
                               };
                               return newItems;
                             });
@@ -299,7 +299,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                         <label className="block text-[9px] font-bold text-gray-500 uppercase tracking-wider md:hidden mb-1">SO Qty</label>
                         <input
                           type="number"
-                          value={item.sales_order_quantity || ''}
+                          value={item.sales_order_item_stock || ''}
                           className="w-full px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-medium shadow-sm cursor-not-allowed text-gray-500"
                           disabled
                           readOnly
