@@ -1,33 +1,31 @@
 import React from 'react';
-import { useSalesOrder } from './SalesOrderScript';
+import { useInvoice } from './InvoiceScript';
+import { formatDateOnly } from '../../services/helper';
 import SEO from '../../components/SEO';
 import {
   Plus, Search, Edit2, Trash2, ShoppingCart,
   ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
-  ChevronLeft, ChevronRight, Filter, Building2, Users, X, AlertTriangle
+  ChevronLeft, ChevronRight, Filter, Building2, Users, X, AlertTriangle,
+  Calendar, Receipt
 } from 'lucide-react';
-import SalesOrderModal from './SalesOrderModal';
-import SalesOrderDetailModal from './SalesOrderDetailModal';
-import DeleteConfirmModal from '../../components/DeleteConfirmModal';
+import InvoiceDetailModal from './InvoiceDetailModal';
 
-const SalesOrder: React.FC = () => {
+const Invoice: React.FC = () => {
   const {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, pagination, isModalOpen, setModalOpen,
-    isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen,
-    selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
-    orderToDelete, setOrderToDelete, actionLoading, deleteLoading,
-    serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus, ProgressStatus,
-    handleCreateOrUpdate, confirmDelete, handleApprove, toggleSort, handlePageChange,
-    formatDate, formatCurrency, currentPage, perPage, approveLoading
-  } = useSalesOrder();
+    deadlineFilter, setDeadlineFilter, paymentFilter, setPaymentFilter,
+    sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
+    actionLoading, serverErrors, setServerErrors, toasts, loadOrders, PaymentStatus, DeadlineStatus,
+    toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
+  } = useInvoice();
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
       <SEO
-        title="Sales Orders"
-        description="Manage sales orders across different branches and customers."
+        title="Invoices"
+        description="Manage invoices across different branches and customers."
       />
 
       {/* Toasts */}
@@ -49,14 +47,14 @@ const SalesOrder: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <ShoppingCart className="w-7 h-7 text-eco-600" /> Sales Orders
+            <ShoppingCart className="w-7 h-7 text-eco-600" /> Invoices
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage sales orders across different branches and customers.</p>
+          <p className="text-gray-500 text-sm mt-1">Manage invoices.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter)}
+            onClick={() => loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter, deadlineFilter, paymentFilter)}
             className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm"
             title="Refresh Table"
           >
@@ -68,7 +66,7 @@ const SalesOrder: React.FC = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
             <input
               type="text"
-              placeholder="Search code or description..."
+              placeholder="Search by Invoice, SO, or DO code..."
               className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-64 shadow-sm text-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -126,6 +124,52 @@ const SalesOrder: React.FC = () => {
             </div>
           </div>
 
+          {/* Deadline Filter */}
+          <div className="relative group">
+            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors pointer-events-none" />
+            <select
+              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-44 text-sm shadow-sm appearance-none font-bold text-gray-700"
+              value={deadlineFilter}
+              onChange={(e) => setDeadlineFilter(e.target.value)}
+            >
+              <option value="">All Deadlines</option>
+              <option value="normal">Normal</option>
+              <option value="overdue">Overdue</option>
+              <option value="closed">Closed</option>
+            </select>
+            {deadlineFilter && (
+              <button onClick={() => setDeadlineFilter('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Filter">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:hidden">
+              <Filter className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* Payment Status Filter */}
+          <div className="relative group">
+            <Receipt className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors pointer-events-none" />
+            <select
+              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-44 text-sm shadow-sm appearance-none font-bold text-gray-700"
+              value={paymentFilter}
+              onChange={(e) => setPaymentFilter(e.target.value)}
+            >
+              <option value="">All Payments</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="paid">Paid</option>
+              <option value="partial_payment">Partial Payment</option>
+            </select>
+            {paymentFilter && (
+              <button onClick={() => setPaymentFilter('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Filter">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:hidden">
+              <Filter className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
           {/* New Order Button */}
           <button
             onClick={() => { setSelectedOrder(null); setServerErrors(null); setModalOpen(true); }}
@@ -156,16 +200,14 @@ const SalesOrder: React.FC = () => {
             <thead className="bg-gray-50/50">
               <tr>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
-                  <div className="flex items-center gap-2">Code <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                  <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Sales Order SKU</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Branch</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Customer</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Items</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('grand_total')}>
-                  <div className="flex items-center justify-end gap-2">Grand Total <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
-                </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Progress</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Deadline</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Deadline Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Payment Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -179,8 +221,8 @@ const SalesOrder: React.FC = () => {
                 <tr>
                   <td colSpan={6} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
                     <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-5" />
-                    <p className="font-bold text-lg">No sales orders found.</p>
-                    <p className="text-sm">Create a new sales order to get started.</p>
+                    <p className="font-bold text-lg">No Invoices found.</p>
+                    <p className="text-sm">Create a new Invoice to get started.</p>
                   </td>
                 </tr>
               ) : (
@@ -196,35 +238,41 @@ const SalesOrder: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        <Building2 className="w-4 h-4 text-gray-400" /> {order.branch_name || '---'}
+                        {order.sales_order_code || '---'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        <Users className="w-4 h-4 text-gray-400" /> {order.customer_name || '---'}
+                        {order.branch_name || '---'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                        {order.customer_name || '---'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                        {formatDateOnly(order.payment_deadline)}
                       </div>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className="inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold bg-white text-gray-900 border border-gray-200 shadow-sm">
-                        {order.sales_order_items?.length || 0} items
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-black text-eco-700">{formatCurrency(order.grand_total)}</span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.approval_status === ApprovalStatus.Approved ? 'bg-green-50 text-green-700 border-green-100' :
-                        order.approval_status === ApprovalStatus.Rejected ? 'bg-red-50 text-red-700 border-red-100' :
-                          'bg-gray-100 text-gray-700 border-gray-200'
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.deadline_status === DeadlineStatus.Overdue ? 'bg-red-50 text-red-700 border-red-100' :
+                        order.deadline_status === DeadlineStatus.Closed ? 'bg-green-50 text-green-700 border-green-100' :
+                          'bg-blue-50 text-blue-700 border-blue-100'
                         }`}>
-                        {order.approval_status?.toUpperCase() || 'DRAFT'}
+                        {order.deadline_status?.toUpperCase() || 'NORMAL'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.progress_status === ProgressStatus.Closed ? 'bg-green-50 text-green-700 border-green-100' : 'bg-yellow-100 text-yellow-700 border-yellow-200'}`}>
-                        {order.progress_status?.toUpperCase() || 'ON GOING'}
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.payment_status === PaymentStatus.Paid ? 'bg-green-50 text-green-700 border-green-100' :
+                        order.payment_status === PaymentStatus.PartialPayment ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
+                          'bg-red-100 text-red-700 border-red-200'
+                        }`}>
+                        {order.payment_status?.toUpperCase() || 'Unpaid'}
                       </span>
                     </td>
+
                   </tr>
                 ))
               )}
@@ -273,36 +321,15 @@ const SalesOrder: React.FC = () => {
         )}
       </div>
 
-      {/* Modals */}
-      <SalesOrderModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={handleCreateOrUpdate}
-        order={selectedOrder}
-        loading={actionLoading}
-        serverErrors={serverErrors}
-      />
 
-      <SalesOrderDetailModal
+      <InvoiceDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         order={orderForDetail}
-        onApprove={handleApprove}
-        approveLoading={approveLoading}
         onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
-        onDelete={(order) => { setOrderToDelete(order); setDetailModalOpen(false); setDeleteModalOpen(true); }}
-      />
-
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Sales Order"
-        message="Are you sure you want to remove this sales order? This action cannot be undone."
-        loading={deleteLoading}
       />
     </div>
   );
 };
 
-export default SalesOrder;
+export default Invoice;

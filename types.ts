@@ -157,10 +157,27 @@ export enum AdjustmentType {
   Out = "out",
 }
 
+export enum ProgressStatus {
+  OnGoing = "on_going",
+  Closed = "closed",
+}
+
 export enum ApprovalStatus {
   Draft = "draft",
   Approved = "approved",
   Rejected = "rejected",
+}
+
+export enum PaymentStatus {
+  Unpaid = "unpaid",
+  Paid = "paid",
+  PartialPayment = "partial_payment",
+}
+
+export enum DeadlineStatus {
+  Normal = 'normal',
+  Overdue = 'overdue',
+  Closed = 'closed',
 }
 
 export interface AdjustmentProductItem {
@@ -188,6 +205,7 @@ export interface SalesOrderItem {
   product_name?: string;
   quantity: number;
   price: number;
+  after_discount_price: number;
   total_price: number;
 }
 
@@ -215,6 +233,7 @@ export interface SalesOrder {
   grand_total: number;
   tax_include: boolean;
   approval_status: ApprovalStatus;
+  progress_status: ProgressStatus;
   sales_order_items: SalesOrderItem[];
   created_at: string;
   updated_at: string;
@@ -232,6 +251,25 @@ export interface DeliveryOrder {
   description?: string;
   approval_status: ApprovalStatus;
   delivery_order_items: DeliveryOrderItem[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Invoice {
+  id: string;
+  code?: string;
+  branch_id: string;
+  branch_name?: string;
+  customer_id: string;
+  customer_name?: string;
+  sales_order_id?: string;
+  sales_order_code?: string;
+  delivery_order_id?: string;
+  delivery_order_code?: string;
+  payment_status: PaymentStatus;
+  deadline_status: DeadlineStatus;
+  payment_bill?: number;
+  shipping_price?: number;
   created_at: string;
   updated_at: string;
 }

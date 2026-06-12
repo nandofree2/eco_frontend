@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../services/api';
-import { SalesOrder, PaginationMeta, Branch, Customer, ApprovalStatus, ProgressStatus } from '../../types';
+import { Invoice, PaginationMeta, Branch, Customer, PaymentStatus, DeadlineStatus } from '../../types';
 
 interface Toast {
   id: string;
@@ -8,14 +8,16 @@ interface Toast {
   message: string;
 }
 
-export const useSalesOrder = () => {
-  const [orders, setOrders] = useState<SalesOrder[]>([]);
+export const useInvoice = () => {
+  const [orders, setOrders] = useState<Invoice[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [branchFilter, setBranchFilter] = useState<string>('');
   const [customerFilter, setCustomerFilter] = useState<string>('');
+  const [deadlineFilter, setDeadlineFilter] = useState<string>('');
+  const [paymentFilter, setPaymentFilter] = useState<string>('');
   const [sortBy, setSortBy] = useState('created_at desc');
 
   // Pagination
@@ -27,9 +29,9 @@ export const useSalesOrder = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
-  const [orderForDetail, setOrderForDetail] = useState<SalesOrder | null>(null);
-  const [orderToDelete, setOrderToDelete] = useState<SalesOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<Invoice | null>(null);
+  const [orderForDetail, setOrderForDetail] = useState<Invoice | null>(null);
+  const [orderToDelete, setOrderToDelete] = useState<Invoice | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
@@ -44,18 +46,18 @@ export const useSalesOrder = () => {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
   }, []);
 
-  const loadOrders = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, branch = branchFilter, customer = customerFilter) => {
+  const loadOrders = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, branch = branchFilter, customer = customerFilter, deadline = deadlineFilter, payment = paymentFilter) => {
     setLoading(true);
     try {
-      const response = await api.sales_orders.list(search, sort, page, perPage, branch, customer);
+      const response = await api.invoices.list(search, sort, page, perPage, branch, customer, deadline, payment);
       setOrders(response.data);
       setPagination(response.meta);
     } catch (err: any) {
-      addToast('error', err.message || 'Failed to load sales orders.');
+      addToast('error', err.message || 'Failed to load invoices.');
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, sortBy, currentPage, perPage, branchFilter, customerFilter, addToast]);
+  }, [searchTerm, sortBy, currentPage, perPage, branchFilter, customerFilter, deadlineFilter, paymentFilter, addToast]);
 
   const loadBranches = useCallback(async () => {
     try {
@@ -84,59 +86,17 @@ export const useSalesOrder = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       setCurrentPage(1);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
+      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter, deadlineFilter, paymentFilter);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, sortBy, branchFilter, customerFilter]);
+  }, [searchTerm, sortBy, branchFilter, customerFilter, deadlineFilter, paymentFilter]);
 
   // Page changes
   useEffect(() => {
     if (currentPage !== 1) {
-      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
+      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter, deadlineFilter, paymentFilter);
     }
   }, [currentPage]);
-
-  const handleCreateOrUpdate = async (formData: any) => {
-    setActionLoading(true);
-    setServerErrors(null);
-    try {
-      if (selectedOrder) {
-        await api.sales_orders.update(selectedOrder.id, formData);
-        addToast('success', 'Sales order updated successfully.');
-      } else {
-        await api.sales_orders.create(formData);
-        addToast('success', 'New sales order created.');
-      }
-      setModalOpen(false);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
-    } catch (err: any) {
-      if (err.status === 422 && err.errors) {
-        setServerErrors(err.errors);
-        addToast('error', 'Validation failed.');
-      } else {
-        addToast('error', err.message || 'Action failed.');
-      }
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const confirmDelete = async () => {
-    if (!orderToDelete) return;
-    setDeleteLoading(true);
-    try {
-      await api.sales_orders.delete(orderToDelete.id);
-      addToast('success', 'Sales order removed.');
-      setDeleteModalOpen(false);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
-    } catch (err: any) {
-      const type = err.status === 422 ? 'warning' : 'error';
-      addToast(type, err.message || 'Delete failed.');
-    } finally {
-      setDeleteLoading(false);
-      setOrderToDelete(null);
-    }
-  };
 
   const toggleSort = (field: string) => {
     setSortBy(prev => {
@@ -164,33 +124,18 @@ export const useSalesOrder = () => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   };
 
-  const [approveLoading, setApproveLoading] = useState(false);
 
-  const handleApprove = async (id: string) => {
-    setApproveLoading(true);
-    try {
-      await api.sales_orders.approve(id);
-      addToast('success', 'Sales order approved successfully.');
-      if (orderForDetail) {
-        setOrderForDetail({ ...orderForDetail, approval_status: 'approved' as any });
-      }
-      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
-    } catch (err: any) {
-      addToast('error', err.message || 'Failed to approve sales order.');
-    } finally {
-      setApproveLoading(false);
-    }
-  };
 
   return {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
+    deadlineFilter, setDeadlineFilter, paymentFilter, setPaymentFilter,
     sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
     isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
     isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
     orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
-    actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
-    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
-    toggleSort, handlePageChange, formatDate, formatCurrency, ApprovalStatus, ProgressStatus
+    actionLoading, deleteLoading, serverErrors, setServerErrors,
+    toasts, PaymentStatus, DeadlineStatus, loadOrders,
+    toggleSort, handlePageChange, formatDate, formatCurrency
   };
 };

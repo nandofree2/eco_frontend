@@ -1,18 +1,17 @@
 import React from 'react';
-import { SalesOrder } from '../../types';
+import { Invoice } from '../../types';
+import { formatDateOnly } from '../../services/helper';
 import { X, ShoppingCart, Building2, Calendar, FileText, ArrowRight, Package, Users, Receipt, Percent, DollarSign, CheckCircle2, Edit2, Trash2 } from 'lucide-react';
 
-interface SalesOrderDetailModalProps {
+interface InvoiceDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  order: SalesOrder | null;
-  onEdit?: (order: SalesOrder) => void;
-  onApprove?: (id: string) => void;
+  order: Invoice | null;
   approveLoading?: boolean;
 }
 
-const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
-  isOpen, onClose, order, onEdit, onApprove, approveLoading
+const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
+  isOpen, onClose, order, approveLoading
 }) => {
   if (!isOpen || !order) return null;
 
@@ -39,7 +38,7 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">Order Details - [ {order.code || 'Sales Order'} ]</h2>
+              <h2 className="text-base font-bold text-white leading-tight">Invoice Details - [ {order.code || 'Invoice'} ]</h2>
             </div>
           </div>
           <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg">
@@ -85,139 +84,91 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               </div>
             )}
 
-            {order.tax_include && (
-              <div className="inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-eco-50 text-eco-700 border border-eco-100">
-                <CheckCircle2 className="w-3 h-3 mr-1" /> Tax Included
-              </div>
-            )}
           </div>
 
-          {/* Items */}
           <div className="space-y-2">
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Order Items</h3>
 
-            {/* Items header */}
             <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-              <div className="col-span-4">Product</div>
-              <div className="col-span-1 text-right">Qty</div>
-              <div className="col-span-1 text-right">Delivered</div>
+              <div className="col-span-3">Product</div>
+              <div className="col-span-2 text-right">Qty</div>
               <div className="col-span-2 text-right">Price</div>
-              <div className="col-span-2 text-right">After Disc</div>
-              <div className="col-span-2 text-right">Total</div>
+              <div className="col-span-2 text-right">Price after Disc</div>
+              <div className="col-span-3 text-right">Total</div>
             </div>
 
-            <div className="space-y-1">
-              {order.sales_order_items?.map((item, index) => (
+            <div className="space-y-1.5">
+              {order.delivery_order_items?.map((item, index) => (
                 <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="sm:col-span-4 flex items-center gap-2">
+                  <div className="sm:col-span-3 flex items-center gap-2">
                     <div className="w-7 h-7 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
                       <Package className="w-3.5 h-3.5" />
                     </div>
                     <p className="text-xs font-bold text-gray-900">{item.product_name || '---'}</p>
                   </div>
-                  <div className="sm:col-span-1 text-right">
+                  <div className="sm:col-span-2 text-right">
                     <span className="text-xs font-bold text-gray-700">{item.quantity}</span>
                   </div>
-                  <div className="sm:col-span-1 text-right">
-                    <span className="text-xs font-medium text-gray-600">{item.delivered_quantity}</span>
+                  <div className="sm:col-span-2 text-right">
+                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.price)}</span>
                   </div>
                   <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-medium text-gray-600">{formatCurrency(item.price)}</span>
+                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.after_discount_price)}</span>
                   </div>
-                  <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-black text-gray-900">{formatCurrency(item.after_discount_price)}</span>
-                  </div>
-                  <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-black text-gray-900">{formatCurrency(item.total_price)}</span>
+                  <div className="sm:col-span-3 text-right">
+                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.total_price)}</span>
                   </div>
                 </div>
               ))}
-              {(!order.sales_order_items || order.sales_order_items.length === 0) && (
-                <p className="text-sm text-gray-500 italic text-center py-4">No items recorded.</p>
-              )}
             </div>
           </div>
 
-          {/* Pricing Breakdown */}
+          {/* Billing Breakdown */}
           <div className="space-y-2">
-            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Pricing Breakdown</h3>
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Billing Breakdown</h3>
             <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl border border-gray-200 p-4 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                  <Receipt className="w-3.5 h-3.5 text-gray-400" /> Subtotal
+                  <Receipt className="w-3.5 h-3.5 text-gray-400" /> Items Subtotal
                 </span>
-                <span className="text-sm font-black text-gray-900">{formatCurrency(order.total_price)}</span>
+                <span className="text-sm font-black text-gray-900">
+                  {formatCurrency((order?.delivery_order_items || []).reduce((sum, item) => sum + (Number(item.total_price) || 0), 0))}
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                  <Percent className="w-3.5 h-3.5 text-orange-400" /> Discount
+                  <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Shipping Price
                 </span>
-                <span className="text-sm font-bold text-orange-600">- {formatCurrency(order.discount_price)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-orange-400" /> Shipping
-                </span>
-                <span className="text-sm font-bold text-orange-600">+ {formatCurrency(order.shipping_price)}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-gray-500 flex items-center gap-1.5">
-                  <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Tax
-                  {order.tax_include && <span className="text-[8px] bg-eco-100 text-eco-700 px-1.5 py-0.5 rounded font-black">INCL</span>}
-                </span>
-                <span className="text-sm font-bold text-blue-600">
-                  {order.tax_include ? 'Included' : `+ ${formatCurrency(order.tax_price)}`}
-                </span>
+                <span className="text-sm font-bold text-gray-900">{formatCurrency(order.shipping_price)}</span>
               </div>
               <div className="border-t border-gray-300 pt-2 flex items-center justify-between">
-                <span className="text-sm font-black text-gray-900 uppercase">Grand Total</span>
-                <span className="text-lg font-black text-eco-700">{formatCurrency(order.grand_total)}</span>
+                <span className="text-sm font-black text-gray-900 uppercase">Payment Bill</span>
+                <span className="text-lg font-black text-eco-700">{formatCurrency(order.payment_bill)}</span>
               </div>
             </div>
           </div>
 
-          {/* Timestamps */}
           <div className="pt-3 border-t border-gray-100 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Created At</span>
-                <span className="text-xs font-bold text-gray-700">{formatDate(order.created_at)}</span>
-
               </div>
+              <span className="text-xs font-bold text-gray-700">{formatDateOnly(order.created_at)}</span>
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Payment Deadline</span>
-                <span className="text-xs font-bold text-gray-700">{order.payment_deadline} days</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Deadline</span>
               </div>
+              <span className="text-xs font-bold text-red-700">{formatDateOnly(order.payment_deadline)}</span>
             </div>
-
           </div>
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-100">
-
-          <div className="flex items-center gap-3">
-            {order.approval_status !== 'approved' && onApprove && (
-              <button
-                onClick={() => onApprove(order.id)}
-                disabled={approveLoading}
-                className="px-4 py-2.5 bg-green-50 text-green-600 hover:bg-green-100 border border-transparent hover:border-green-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm"
-              >
-                <CheckCircle2 className="w-4 h-4" /> {approveLoading ? 'Approving...' : 'Approve'}
-              </button>
-            )}
-            {order.approval_status !== 'approved' && onEdit && (
-              <button onClick={() => onEdit(order)} className="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-transparent hover:border-blue-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
-                <Edit2 className="w-4 h-4" /> Edit
-              </button>
-            )}
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default SalesOrderDetailModal;
+export default InvoiceDetailModal;

@@ -136,11 +136,14 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
     const sales_order_items_attributes = items.map(item => {
       const qty = sanitizeNumber(item.quantity || 0);
       const price = sanitizeNumber(item.price || 0);
+      const discountRatio = subtotal > 0 ? safeDiscount / subtotal : 0;
+      const afterDiscountPrice = sanitizeNumber(price * (1 - discountRatio));
       const attr: any = {
         product_id: item.product_id,
         quantity: qty,
         price: price,
-        total_price: Math.round(qty * price * 100) / 100
+        after_discount_price: afterDiscountPrice,
+        total_price: sanitizeNumber(qty * afterDiscountPrice)
       };
       if (item.id) attr.id = item.id;
       return attr;
@@ -368,90 +371,105 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
               <div className="space-y-2">
                 {items.length > 0 && (
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-3 px-6 hidden md:grid">
-                    <div className="md:col-span-5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
+                    <div className="md:col-span-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Product</div>
                     <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
-                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Qty</div>
-                    <div className="md:col-span-3 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Price</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Price</div>
+                    <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">After Disc.</div>
                     <div className="md:col-span-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total</div>
                   </div>
                 )}
-                {items.map((item, index) => (
-                  <div key={index} className="p-1 bg-gray-50 border border-gray-200 rounded-xl relative group">
-                    <button
-                      type="button"
-                      onClick={() => removeItem(index)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-200 shadow-sm transition-all opacity-0 group-hover:opacity-100 z-10"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
+                {items.map((item, index) => {
+                  const qty = sanitizeNumber(item.quantity || 0);
+                  const price = sanitizeNumber(item.price || 0);
+                  const discountRatio = subtotal > 0 ? safeDiscount / subtotal : 0;
+                  const afterDiscountPrice = sanitizeNumber(price * (1 - discountRatio));
+                  const itemTotalPrice = sanitizeNumber(qty * afterDiscountPrice);
 
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
-                      {/* Product */}
-                      <div className="md:col-span-5">
-                        <SearchableDropdown
-                          onSearch={(q) => {
-                            const selectedProductIds = items
-                              .map((i, idx) => idx !== index ? i.product_id : null)
-                              .filter(Boolean) as string[];
-                            return api.products.product_list(q, selectedProductIds);
-                          }}
-                          value={item.product_id || ''}
-                          onChange={(id, name) => {
-                            setItems(prev => {
-                              const newItems = [...prev];
-                              newItems[index] = { ...newItems[index], product_id: id, product_name: name || newItems[index].product_name };
-                              return newItems;
-                            });
-                          }}
-                          placeholder="Search product..."
-                          error={!!errors[`item_${index}_product`]}
-                          initialName={item.product_name}
-                          compact={true}
-                        />
-                        {errors[`item_${index}_product`] && (
-                          <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_product`]}</p>
-                        )}
-                      </div>
+                  return (
+                    <div key={index} className="p-1 bg-gray-50 border border-gray-200 rounded-xl relative group">
+                      <button
+                        type="button"
+                        onClick={() => removeItem(index)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:border-red-200 shadow-sm transition-all opacity-0 group-hover:opacity-100 z-10"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
 
-                      {/* Qty */}
-                      <div className="md:col-span-2">
-                        <input
-                          type="number"
-                          min="1"
-                          step="1"
-                          value={item.quantity || ''}
-                          onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
-                          className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
-                        />
-                        {errors[`item_${index}_quantity`] && (
-                          <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_quantity`]}</p>
-                        )}
-                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
+                        {/* Product */}
+                        <div className="md:col-span-4">
+                          <SearchableDropdown
+                            onSearch={(q) => {
+                              const selectedProductIds = items
+                                .map((i, idx) => idx !== index ? i.product_id : null)
+                                .filter(Boolean) as string[];
+                              return api.products.product_list(q, selectedProductIds);
+                            }}
+                            value={item.product_id || ''}
+                            onChange={(id, name) => {
+                              setItems(prev => {
+                                const newItems = [...prev];
+                                newItems[index] = { ...newItems[index], product_id: id, product_name: name || newItems[index].product_name };
+                                return newItems;
+                              });
+                            }}
+                            placeholder="Search product..."
+                            error={!!errors[`item_${index}_product`]}
+                            initialName={item.product_name}
+                            compact={true}
+                          />
+                          {errors[`item_${index}_product`] && (
+                            <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_product`]}</p>
+                          )}
+                        </div>
 
-                      {/* Price */}
-                      <div className="md:col-span-3">
-                        <input
-                          type="number"
-                          min="0"
-                          step="100"
-                          value={item.price || ''}
-                          onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value) || 0)}
-                          className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
-                        />
-                        {errors[`item_${index}_price`] && (
-                          <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_price`]}</p>
-                        )}
-                      </div>
+                        {/* Qty */}
+                        <div className="md:col-span-2">
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={item.quantity || ''}
+                            onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 0)}
+                            className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_quantity`] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                          />
+                          {errors[`item_${index}_quantity`] && (
+                            <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_quantity`]}</p>
+                          )}
+                        </div>
 
-                      {/* Line Total */}
-                      <div className="md:col-span-2">
-                        <div className="w-full px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 shadow-sm">
-                          {formatCurrency(sanitizeNumber(item.quantity || 0) * sanitizeNumber(item.price || 0))}
+                        {/* Price */}
+                        <div className="md:col-span-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="100"
+                            value={item.price || ''}
+                            onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value) || 0)}
+                            className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                          />
+                          {errors[`item_${index}_price`] && (
+                            <p className="text-red-500 text-[9px] font-medium mt-0.5">{errors[`item_${index}_price`]}</p>
+                          )}
+                        </div>
+
+                        {/* Price After Discount */}
+                        <div className="md:col-span-2">
+                          <div className="w-full px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-medium text-gray-600 shadow-sm truncate">
+                            {formatCurrency(afterDiscountPrice)}
+                          </div>
+                        </div>
+
+                        {/* Line Total */}
+                        <div className="md:col-span-2">
+                          <div className="w-full px-2 py-1.5 bg-gray-100 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 shadow-sm">
+                            {formatCurrency(itemTotalPrice)}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
 
                 {items.length === 0 && (
                   <div className="text-center py-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
