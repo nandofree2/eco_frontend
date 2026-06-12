@@ -20,6 +20,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
   const [customerId, setCustomerId] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [description, setDescription] = useState('');
+  const [invoiced_date, setInvoicedDate] = useState('');
   const [salesOrderId, setSalesOrderId] = useState('');
   const [salesOrderCode, setSalesOrderCode] = useState('');
   const [salesOrderName, setSalesOrderName] = useState('');
@@ -37,6 +38,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         setCustomerName(order.customer_name || '');
         setSalesOrderId(order.sales_order_id || '');
         setDescription(order.description || '');
+        setInvoicedDate(order.invoiced_date || '');
         const mappedItems = (order.delivery_order_items || []).map(item => ({
           ...item,
           product_name: item.product_name || (item as any).product?.name || (item as any).sales_order_item?.product?.name,
@@ -50,6 +52,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         setCustomerName('');
         setSalesOrderId('');
         setDescription('');
+        setInvoicedDate('');
         setItems([]);
         setDeletedItemIds([]);
       }
@@ -102,6 +105,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
     const formData = {
       sales_order_id: salesOrderId,
       description,
+      invoiced_date,
       delivery_order_items_attributes,
     };
 
@@ -194,7 +198,6 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                   )}
                 </div>
 
-                {/* Description */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
                     <FileText className="w-3.5 h-3.5 text-eco-600" /> Customer Name
@@ -219,6 +222,18 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
                   />
                 </div>
 
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-eco-600" /> Invoice Date
+                  </label>
+                  <input
+                    type="date"
+                    value={invoiced_date}
+                    onChange={(e) => setInvoicedDate(e.target.value)}
+                    onClick={(e) => (e.target as any).showPicker?.()}
+                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 focus:ring-eco-500/20 rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium text-gray-800 cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
 

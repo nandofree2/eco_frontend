@@ -1,4 +1,4 @@
-import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder } from '../types';
+import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder, Invoice } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER;
@@ -686,5 +686,23 @@ export const api = {
       const json = await request(`/delivery_orders/${id}/approve`, { method: 'POST' });
       return mapAttributes(json.data || json);
     },
-  }
+  },
+  invoices: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string, deadlineStatus?: string, paymentStatus?: string): Promise<PaginatedResponse<Invoice>> => {
+      const deadlineMap: Record<string, string> = { normal: '0', overdue: '1', closed: '2' };
+      const paymentMap: Record<string, string> = { unpaid: '0', paid: '1', partial_payment: '2' };
+
+      const params = new URLSearchParams();
+      if (query) params.append('q[code_or_delivery_order_sales_order_code_or_delivery_order_code_cont]', query);
+      if (branchId) params.append('q[branch_id_eq]', branchId);
+      if (customerId) params.append('q[delivery_order_sales_order_customer_id_eq]', customerId);
+      if (deadlineStatus && deadlineMap[deadlineStatus] !== undefined) params.append('q[deadline_status_eq]', deadlineMap[deadlineStatus]);
+      if (paymentStatus && paymentMap[paymentStatus] !== undefined) params.append('q[payment_status_eq]', paymentMap[paymentStatus]);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/invoices?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+  },
 };

@@ -96,8 +96,7 @@ const DeliveryOrderDetailModal: React.FC<DeliveryOrderDetailModalProps> = ({
             <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
               <div className="col-span-5">Product</div>
               <div className="col-span-2 text-right">Qty</div>
-              <div className="col-span-3 text-right">Price</div>
-              <div className="col-span-2 text-right">Total</div>
+
             </div>
 
             <div className="space-y-1.5">
@@ -114,13 +113,9 @@ const DeliveryOrderDetailModal: React.FC<DeliveryOrderDetailModalProps> = ({
                   </div>
                 </div>
               ))}
-              {(!order.delivery_order_items || order.delivery_order_items.length === 0) && (
-                <p className="text-sm text-gray-500 italic text-center py-4">No items recorded.</p>
-              )}
             </div>
           </div>
 
-          {/* Timestamps */}
           <div className="pt-3 border-t border-gray-100 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-gray-400">
