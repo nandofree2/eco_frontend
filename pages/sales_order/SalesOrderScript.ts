@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../../services/api';
-import { SalesOrder, PaginationMeta, Branch, Customer, ApprovalStatus, ProgressStatus } from '../../types';
+import { SalesOrder, PaginationMeta, Branch, Customer, ApprovalStatus, ProgressStatus, PaymentStatus } from '../../types';
 
 interface Toast {
   id: string;
@@ -190,7 +190,7 @@ export const useSalesOrder = () => {
     isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
     orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
     actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
-    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
+    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove, PaymentStatus,
     toggleSort, handlePageChange, formatDate, formatCurrency, ApprovalStatus, ProgressStatus
   };
 };
