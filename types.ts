@@ -158,8 +158,9 @@ export enum AdjustmentType {
 }
 
 export enum ProgressStatus {
+  StandBY = "stand_by",
   OnGoing = "on_going",
-  Closed = "closed",
+  Finished = "finished",
 }
 
 export enum ApprovalStatus {
@@ -170,8 +171,8 @@ export enum ApprovalStatus {
 
 export enum PaymentStatus {
   Unpaid = "unpaid",
-  Paid = "paid",
   PartialPayment = "partial_payment",
+  FullyPaid = "fully_paid",
 }
 
 export enum DeadlineStatus {
@@ -234,6 +235,7 @@ export interface SalesOrder {
   tax_include: boolean;
   approval_status: ApprovalStatus;
   progress_status: ProgressStatus;
+  payment_status: PaymentStatus;
   sales_order_items: SalesOrderItem[];
   created_at: string;
   updated_at: string;
