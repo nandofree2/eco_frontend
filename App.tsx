@@ -21,6 +21,7 @@ import AdjustmentProduct from './pages/adjustment_product/AdjustmentProduct';
 import SalesOrder from './pages/sales_order/SalesOrder';
 import DeliveryOrder from './pages/delivery_order/DeliveryOrder';
 import Invoice from './pages/invoice/Invoice';
+import AccountReceivable from './pages/account_receivable/AccountReceivable';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
 // Import singleton ability to ensure it's hydrated globally
@@ -223,6 +224,11 @@ const App: React.FC = () => {
 					<Route path="/invoices" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Invoice">
 							<Invoice />
+						</ProtectedRoute>
+					} />
+					<Route path="/account_receivables" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="AccountReceivable">
+							<AccountReceivable />
 						</ProtectedRoute>
 					} />
 

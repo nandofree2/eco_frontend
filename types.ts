@@ -262,6 +262,8 @@ export interface Invoice {
   branch_name?: string;
   customer_id: string;
   customer_name?: string;
+  customer_deposit?: number;
+  payment_remaining?: number;
   sales_order_id?: string;
   sales_order_code?: string;
   delivery_order_id?: string;
@@ -273,6 +275,26 @@ export interface Invoice {
   created_at: string;
   updated_at: string;
 }
+
+export enum PaymentType {
+  Cash = "cash",
+  Transfer = "transfer",
+}
+
+export interface AccountReceivable {
+  id: string;
+  code?: string;
+  amount: number;
+  payment_type: PaymentType;
+  payment_date: string;
+  approval_status: ApprovalStatus;
+  invoice_code?: string;
+  customer_name?: string;
+  branch_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 
 export interface AuthState {
   user: User | null;

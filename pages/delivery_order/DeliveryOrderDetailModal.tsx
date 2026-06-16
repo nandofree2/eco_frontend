@@ -39,8 +39,7 @@ const DeliveryOrderDetailModal: React.FC<DeliveryOrderDetailModalProps> = ({
               <ShoppingCart className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">Order Details</h2>
-              <p className="text-eco-100 text-[9px] font-bold uppercase tracking-widest">{order.code || 'Delivery Order'}</p>
+              <h2 className="text-base font-bold text-white leading-tight">Delivery Order Details - {order.code || 'Delivery Order'} </h2>
             </div>
           </div>
           <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg">

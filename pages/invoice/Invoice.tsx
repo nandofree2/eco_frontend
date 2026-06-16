@@ -170,14 +170,7 @@ const Invoice: React.FC = () => {
             </div>
           </div>
 
-          {/* New Order Button */}
-          <button
-            onClick={() => { setSelectedOrder(null); setServerErrors(null); setModalOpen(true); }}
-            className="bg-eco-600 hover:bg-eco-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-eco-200 active:scale-95"
-          >
-            <Plus className="w-5 h-5" />
-            <span>New Order</span>
-          </button>
+
         </div>
       </div>
 
