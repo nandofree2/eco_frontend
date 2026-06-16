@@ -113,6 +113,7 @@ const Customer: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Receivable</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Payable</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Ordered Amount</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Deposit</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Actions</th>
               </tr>
             </thead>
@@ -176,6 +177,11 @@ const Customer: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
                         Rp {customer.ordered_amount}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        Rp {customer.deposit}
                       </div>
                     </td>
                     <td className="px-6 py-4">

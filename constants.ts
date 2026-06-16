@@ -68,6 +68,7 @@ export const NAV_STRUCTURE: NavItem[] = [
             { label: 'Sales Orders', path: '/sales_orders', icon: ShoppingCart, resource: 'SalesOrder', description: 'Manage sales orders and transactions' },
             { label: 'Delivery Orders', path: '/delivery_orders', icon: Truck, resource: 'DeliveryOrder', description: 'Manage delivery orders and transactions' },
             { label: 'Invoices', path: '/invoices', icon: Receipt, resource: 'Invoice', description: 'Manage invoices and transactions' },
+            { label: 'Account Receivables', path: '/account_receivables', icon: Receipt, resource: 'AccountReceivable', description: 'Manage account receivables' },
         ]
     },
     {

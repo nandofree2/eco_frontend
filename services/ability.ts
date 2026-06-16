@@ -1,7 +1,7 @@
 import { PureAbility, AbilityBuilder, AbilityClass } from '@casl/ability';
 
 export type Action = 'manage' | 'create' | 'read' | 'update' | 'destroy' | 'see_menu' | string;
-export type Subject = 'all' | 'Product' | 'Category' | 'UnitOfMeasurement' | 'User' | 'Role' | 'Dashboard' | 'Province' | 'City' | 'Branch' | 'Tenant' | 'Customer' | 'StockProduct' | 'AdjustmentProduct' | 'SalesOrder' | 'Variant' | string;
+export type Subject = 'all' | 'Product' | 'Category' | 'UnitOfMeasurement' | 'User' | 'Role' | 'Dashboard' | 'Province' | 'City' | 'Branch' | 'Tenant' | 'Customer' | 'StockProduct' | 'AdjustmentProduct' | 'SalesOrder' | 'Variant' | 'Invoice' | 'AccountReceivable' | string;
 
 export interface RawRule {
   action: Action[];

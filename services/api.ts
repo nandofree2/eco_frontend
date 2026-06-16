@@ -1,4 +1,4 @@
-import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder, Invoice } from '../types';
+import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder, Invoice, AccountReceivable } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER;
@@ -703,6 +703,43 @@ export const api = {
       params.append('per_page', perPage.toString());
       const json = await request(`/invoices?${params.toString()}`);
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    invoice_list_by_customer: async (customerId: string): Promise<Invoice[]> => {
+      const json = await request(`/invoices/invoice_list_by_customer?customer_id=${customerId}`);
+      return (json.data || []).map(mapAttributes);
+    }
+  },
+  account_receivables: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, approvalStatus?: string, customerName?: string): Promise<PaginatedResponse<AccountReceivable>> => {
+      const approvalMap: Record<string, string> = { draft: '0', approved: '1', rejected: '2' };
+      const params = new URLSearchParams();
+      if (query) params.append('q[code_or_invoice_code_cont]', query);
+      if (customerName) params.append('q[invoice_delivery_order_sales_order_customer_name_cont]', customerName);
+      if (approvalStatus && approvalMap[approvalStatus] !== undefined) params.append('q[approval_status_eq]', approvalMap[approvalStatus]);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/account_receivables?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<AccountReceivable> => {
+      const json = await request(`/account_receivables/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<AccountReceivable>) => {
+      const json = await request('/account_receivables', { method: 'POST', body: JSON.stringify({ account_receivable: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<AccountReceivable>) => {
+      const json = await request(`/account_receivables/${id}`, { method: 'PATCH', body: JSON.stringify({ account_receivable: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/account_receivables/${id}`, { method: 'DELETE' });
+    },
+    approve: async (id: string) => {
+      const json = await request(`/account_receivables/${id}/approve`, { method: 'POST' });
+      return mapAttributes(json.data || json);
     },
   },
 };

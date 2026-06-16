@@ -145,6 +145,10 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
                 <span className="text-sm font-black text-gray-900 uppercase">Payment Bill</span>
                 <span className="text-lg font-black text-eco-700">{formatCurrency(order.payment_bill)}</span>
               </div>
+              <div className="border-t border-gray-300 pt-2 flex items-center justify-between">
+                <span className="text-sm font-black text-gray-900 uppercase">Payment Remaining</span>
+                <span className="text-lg font-black text-eco-700">{formatCurrency(order.payment_remaining)}</span>
+              </div>
             </div>
           </div>
 
