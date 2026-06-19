@@ -85,6 +85,42 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
             )}
 
           </div>
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Account Receivables</h3>
+
+            <div className="hidden sm:grid grid-cols-12 gap-2 px-2 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
+              <div className="col-span-3">code</div>
+              <div className="col-span-2 text-right">Amount</div>
+              <div className="col-span-2 text-right">Payment Type</div>
+              <div className="col-span-2 text-right">Payment date</div>
+
+            </div>
+
+            <div className="space-y-1.5">
+              {order.account_receivables?.map((item, index) => {
+                const attrs = (item as any).attributes || item;
+                return (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="sm:col-span-3 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
+                        <Package className="w-3.5 h-3.5" />
+                      </div>
+                      <p className="text-xs font-bold text-gray-900">{attrs.code || '---'}</p>
+                    </div>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{formatCurrency(Number(attrs.amount))}</span>
+                    </div>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{attrs.payment_type}</span>
+                    </div>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{formatDateOnly(attrs.payment_date)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
 
           <div className="space-y-2">
             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Order Items</h3>
@@ -98,28 +134,31 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              {order.delivery_order_items?.map((item, index) => (
-                <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="sm:col-span-3 flex items-center gap-2">
-                    <div className="w-7 h-7 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
-                      <Package className="w-3.5 h-3.5" />
+              {order.delivery_order_items?.map((item, index) => {
+                const attrs = (item as any).attributes || item;
+                return (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="sm:col-span-3 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded bg-white border border-gray-200 flex items-center justify-center text-gray-400 shrink-0">
+                        <Package className="w-3.5 h-3.5" />
+                      </div>
+                      <p className="text-xs font-bold text-gray-900">{attrs.product_name || '---'}</p>
                     </div>
-                    <p className="text-xs font-bold text-gray-900">{item.product_name || '---'}</p>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{attrs.quantity}</span>
+                    </div>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{formatCurrency(Number(attrs.price))}</span>
+                    </div>
+                    <div className="sm:col-span-2 text-right">
+                      <span className="text-xs font-bold text-gray-700">{formatCurrency(Number(attrs.after_discount_price))}</span>
+                    </div>
+                    <div className="sm:col-span-3 text-right">
+                      <span className="text-xs font-bold text-gray-700">{formatCurrency(Number(attrs.total_price))}</span>
+                    </div>
                   </div>
-                  <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-bold text-gray-700">{item.quantity}</span>
-                  </div>
-                  <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.price)}</span>
-                  </div>
-                  <div className="sm:col-span-2 text-right">
-                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.after_discount_price)}</span>
-                  </div>
-                  <div className="sm:col-span-3 text-right">
-                    <span className="text-xs font-bold text-gray-700">{formatCurrency(item.total_price)}</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

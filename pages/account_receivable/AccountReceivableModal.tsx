@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, AlertCircle, Loader2, Receipt } from 'lucide-react';
 import { AccountReceivable, PaymentType } from '../../types';
-import SearchableDropdown from '../../components/SearchableDropdown';
+import SearchableDropdown from '../../components/SearchableDropdownAccountReceivable';
 import { api } from '../../services/api';
 
 interface AccountReceivableModalProps {
@@ -19,6 +19,8 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
   const [formData, setFormData] = useState({
     customer_id: '',
     customer_name: '',
+    customer_address: '',
+    customer_deposit: '',
     invoice_id: '',
     invoice_code: '',
     amount: '',
@@ -33,27 +35,25 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
   useEffect(() => {
     if (record) {
       setFormData({
-        customer_id: '', // Record editing might not load everything perfectly initially for dropdowns without full fetched data
+        customer_id: '', // dropdowns use initialName for display in edit mode
         customer_name: record.customer_name || '',
+        customer_address: (record as any).customer_address || '',
+        customer_deposit: (record as any).customer_deposit?.toString() || '',
         invoice_id: (record as any).invoice_id || '',
         invoice_code: record.invoice_code || '',
         amount: record.amount.toString(),
         payment_type: record.payment_type || 'cash',
         payment_date: record.payment_date || new Date().toISOString().split('T')[0]
       });
-      if (record.invoice_code) {
-        api.invoices.list(record.invoice_code).then(res => {
-          const inv = res.data.find((i: any) => i.code === record.invoice_code);
-          if (inv) {
-            setPaymentRemaining(Number(inv.payment_remaining) || 0);
-            setCustomerDeposit(Number(inv.customer_deposit) || 0);
-          }
-        }).catch(err => console.error("Failed to load invoice", err));
-      }
+      // Use fields now included in the serializer response
+      setPaymentRemaining(Number((record as any).payment_remaining) || 0);
+      setCustomerDeposit(Number((record as any).customer_deposit) || 0);
     } else {
       setFormData({
         customer_id: '',
         customer_name: '',
+        customer_address: '',
+        customer_deposit: '',
         invoice_id: '',
         invoice_code: '',
         amount: '',
@@ -68,18 +68,21 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleCustomerChange = async (id: string, name?: string) => {
-    // Sanitize: clear all fields if customer changes
+  const handleCustomerChange = async (id: string, name?: string, customerAddress?: string, customerDeposit?: number) => {
+    const deposit = Number(customerDeposit ?? 0);
+
     setFormData(prev => ({
       ...prev,
       customer_id: id,
       customer_name: name || '',
+      customer_address: customerAddress || '',
+      customer_deposit: deposit ? deposit.toString() : '',
       invoice_id: '',
       invoice_code: '',
       amount: '',
     }));
     setPaymentRemaining(0);
-    setCustomerDeposit(0);
+    setCustomerDeposit(deposit);
     setInvoicesForCustomer([]);
 
     if (id) {
@@ -94,9 +97,12 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
 
   const handleInvoiceChange = (id: string, name?: string) => {
     const selectedInvoice = invoicesForCustomer.find(i => i.id === id);
+    const invoiceDeposit = selectedInvoice?.customer_deposit ?? customerDeposit;
+
     if (selectedInvoice) {
       setPaymentRemaining(Number(selectedInvoice.payment_remaining) || 0);
-      setCustomerDeposit(Number(selectedInvoice.customer_deposit) || 0);
+      setCustomerDeposit(Number(invoiceDeposit) || 0);
+      setFormData(prev => ({ ...prev, customer_deposit: String(Number(invoiceDeposit) || 0) }));
     }
     setFormData(prev => ({ ...prev, invoice_id: id, invoice_code: name || '', amount: '' }));
   };
@@ -161,37 +167,58 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
           )}
 
           <form id="ar-form" onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SearchableDropdown
-                  label="Customer"
-                  value={formData.customer_id}
-                  initialName={formData.customer_name}
-                  onChange={handleCustomerChange}
-                  onSearch={async (q) => {
-                    const res = await api.customers.customer_list(q);
-                    return res;
-                  }}
-                  placeholder="Select Customer..."
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <SearchableDropdown
+                label="Customer"
+                value={formData.customer_id}
+                initialName={formData.customer_name}
+                onChange={handleCustomerChange}
+                onSearch={async (q) => {
+                  const res = await api.customers.customer_list(q);
+                  return res.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    customer_address: (c as any).address || '',
+                    customer_deposit: Number((c as any).deposit ?? (c as any).customer_deposit ?? 0)
+                  }));
+                }}
+                placeholder="Select Customer..."
+                required
+                compact={true}
+              />
+
+              <SearchableDropdown
+                label="Invoice"
+                value={formData.invoice_id}
+                initialName={formData.invoice_code}
+                onChange={handleInvoiceChange}
+                onSearch={async (q) => {
+                  return invoicesForCustomer
+                    .filter(i => (i.code || '').toLowerCase().includes(q.toLowerCase()))
+                    .map(i => ({ id: i.id, name: i.code }));
+                }}
+                placeholder={formData.customer_id ? "Select Invoice..." : "Select Customer First"}
+                dependencies={[invoicesForCustomer]}
+                required
+                compact={true}
+              />
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider block">
+                  Payment Date <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="date"
+                  value={formData.payment_date}
+                  onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
+                  onClick={(e) => (e.target as any).showPicker?.()}
+                  className="w-full h-[30px] px-3 py-1.5 bg-gray-50 border border-gray-200 focus:ring-eco-500/20 rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium text-gray-800 cursor-pointer"
                   required
-                  compact={true}
                 />
-                
-                <SearchableDropdown
-                  label="Invoice"
-                  value={formData.invoice_id}
-                  initialName={formData.invoice_code}
-                  onChange={handleInvoiceChange}
-                  onSearch={async (q) => {
-                    return invoicesForCustomer
-                      .filter(i => (i.code || '').toLowerCase().includes(q.toLowerCase()))
-                      .map(i => ({ id: i.id, name: i.code }));
-                  }}
-                  placeholder={formData.customer_id ? "Select Invoice..." : "Select Customer First"}
-                  dependencies={[invoicesForCustomer]}
-                  required
-                  compact={true}
-                />
+                {errors?.payment_date && (
+                  <p className="text-red-500 text-[10px] mt-0.5 font-medium">{errors.payment_date[0]}</p>
+                )}
               </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -216,12 +243,15 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
                   <input
                     type="text"
+                    initialName={formData.customer_deposit}
                     value={formatCurrency(customerDeposit).replace(/Rp\s?/, '')}
                     readOnly
                     className="w-full pl-9 pr-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-bold text-blue-600 cursor-not-allowed"
                   />
                 </div>
               </div>
+
+
 
               <div>
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
@@ -255,21 +285,20 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
                 </select>
                 {errors?.payment_type && <p className="text-red-500 text-xs mt-1 font-medium">{errors.payment_type[0]}</p>}
               </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 block">Payment Date</label>
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  Customer Address
+                </label>
                 <input
-                  type="date"
-                  value={formData.payment_date}
-                  onChange={(e) => setFormData({ ...formData, payment_date: e.target.value })}
-                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium"
-                  required
+                  type="text"
+                  value={formData.customer_address}
+                  readOnly
+                  placeholder="—"
+                  className="w-full px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-medium text-gray-700 cursor-not-allowed"
                 />
-                {errors?.payment_date && <p className="text-red-500 text-xs mt-1 font-medium">{errors.payment_date[0]}</p>}
               </div>
             </div>
+
           </form>
         </div>
 

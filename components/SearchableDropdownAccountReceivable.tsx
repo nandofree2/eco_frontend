@@ -4,18 +4,22 @@ import { Search, ChevronDown, Loader2, X } from 'lucide-react';
 interface Option {
   id: string;
   name: string;
+  physical_stock?: number;
+  customer_deposit?: number;
+  customer_address: string;
 }
 
 interface SearchableDropdownProps {
   label: string;
   value: string;
-  onChange: (id: string, name?: string) => void;
+  onChange: (id: string, name?: string, customerAddress: string, customerDeposit?: number) => void;
   onSearch: (query: string) => Promise<Option[]>;
   placeholder?: string;
   error?: boolean;
   required?: boolean;
   initialName?: string;
   compact?: boolean;
+  dependencies?: any[];
 }
 
 const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
@@ -27,7 +31,8 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   error = false,
   required = false,
   initialName = "",
-  compact = false
+  compact = false,
+  dependencies = []
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -58,6 +63,16 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
       handleSearch('');
     }
   }, [isOpen]);
+
+  // Re-fetch or clear options when external dependencies change
+  const depString = JSON.stringify(dependencies);
+  useEffect(() => {
+    if (isOpen) {
+      handleSearch(query);
+    } else {
+      setOptions([]);
+    }
+  }, [depString]);
 
   // Debounced search
   useEffect(() => {
@@ -93,7 +108,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
 
   const selectOption = (option: Option) => {
     setDisplayName(option.name);
-    onChange(option.id, option.name);
+    onChange(option.id, option.name, option.customer_address ?? '', option.customer_deposit ?? 0);
     setIsOpen(false);
     setQuery('');
   };

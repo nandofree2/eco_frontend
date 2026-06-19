@@ -8,15 +8,16 @@ import {
   ChevronLeft, ChevronRight, Filter, Users, X, AlertTriangle, Check
 } from 'lucide-react';
 import AccountReceivableModal from './AccountReceivableModal';
+import AccountReceivableDetailModal from './AccountReceivableDetailModal';
 
 const AccountReceivable: React.FC = () => {
   const {
     accountReceivables, customers, loading, searchTerm, setSearchTerm,
     customerFilter, setCustomerFilter, approvalFilter, setApprovalFilter,
-    sortBy, pagination, isModalOpen, setModalOpen, selectedAR, setSelectedAR,
-    toasts, loadData, deleteAR, approveAR, ability, ApprovalStatus,
+    sortBy, pagination, isModalOpen, setModalOpen, isDetailOpen, setDetailOpen,
+    selectedAR, setSelectedAR, toasts, loadData, deleteAR, approveAR, ability, ApprovalStatus,
     toggleSort, handlePageChange, formatCurrency, currentPage, perPage,
-    createAR, updateAR, actionLoading, serverErrors
+    createAR, updateAR, actionLoading, approveLoading, serverErrors
   } = useAccountReceivable();
 
   return (
@@ -151,7 +152,6 @@ const AccountReceivable: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Type</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Date</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -173,9 +173,12 @@ const AccountReceivable: React.FC = () => {
                 accountReceivables.map((ar) => (
                   <tr key={ar.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
-                      <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm cursor-pointer" onClick={() => { setSelectedAR(ar); setModalOpen(true); }}>
-                        {ar.code || ar.id?.slice(0, 8)}
-                      </span>
+                  <span
+                    className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm cursor-pointer"
+                    onClick={() => { setSelectedAR(ar); setDetailOpen(true); }}
+                  >
+                    {ar.code || ar.id?.slice(0, 8)}
+                  </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
@@ -209,25 +212,6 @@ const AccountReceivable: React.FC = () => {
                         }`}>
                         {ar.approval_status?.toUpperCase() || 'DRAFT'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        {ar.approval_status !== ApprovalStatus.Approved && ability.can('update', 'AccountReceivable') && (
-                           <>
-                           <button onClick={() => approveAR(ar.id)} className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all" title="Approve">
-                             <Check className="w-5 h-5" />
-                           </button>
-                           <button onClick={() => { setSelectedAR(ar); setModalOpen(true); }} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit">
-                             <Edit2 className="w-4 h-4" />
-                           </button>
-                           </>
-                        )}
-                        {ability.can('destroy', 'AccountReceivable') && (
-                          <button onClick={() => deleteAR(ar.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all" title="Delete">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 ))
@@ -276,7 +260,20 @@ const AccountReceivable: React.FC = () => {
           </div>
         )}
       </div>
-      
+
+      {isDetailOpen && (
+        <AccountReceivableDetailModal
+          isOpen={isDetailOpen}
+          onClose={() => setDetailOpen(false)}
+          record={selectedAR}
+          onEdit={() => { setDetailOpen(false); setModalOpen(true); }}
+          onApprove={approveAR}
+          approveLoading={approveLoading}
+          canEdit={ability.can('update', 'AccountReceivable')}
+          canApprove={ability.can('update', 'AccountReceivable')}
+        />
+      )}
+
       {isModalOpen && (
         <AccountReceivableModal
           isOpen={isModalOpen}

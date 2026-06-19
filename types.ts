@@ -208,6 +208,10 @@ export interface SalesOrderItem {
   price: number;
   after_discount_price: number;
   total_price: number;
+  code?: string;
+  amount: number;
+  payment_type: PaymentType;
+  payment_date: string;
 }
 
 export interface DeliveryOrderItem {

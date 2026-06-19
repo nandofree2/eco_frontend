@@ -25,10 +25,12 @@ export const useAccountReceivable = () => {
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
   
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
+  const [isDetailOpen, setDetailOpen] = useState<boolean>(false);
   const [selectedAR, setSelectedAR] = useState<AccountReceivable | null>(null);
   
   const [serverErrors, setServerErrors] = useState<any>(null);
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [approveLoading, setApproveLoading] = useState<boolean>(false);
 
   const ability = useContext(AbilityContext);
 
@@ -131,12 +133,16 @@ export const useAccountReceivable = () => {
 
   const approveAR = async (id: string) => {
     if (!window.confirm("Are you sure you want to approve this Account Receivable? This will deduct the remaining bill of the invoice.")) return;
+    setApproveLoading(true);
     try {
       await api.account_receivables.approve(id);
       showToast('Account Receivable approved successfully', 'success');
+      setDetailOpen(false);
       loadData();
     } catch (error: any) {
       showToast(error.message || 'Failed to approve', 'error');
+    } finally {
+      setApproveLoading(false);
     }
   };
 
@@ -146,11 +152,12 @@ export const useAccountReceivable = () => {
   };
 
   return {
-    accountReceivables, customers, loading, actionLoading,
+    accountReceivables, customers, loading, actionLoading, approveLoading,
     searchTerm, setSearchTerm, customerFilter, setCustomerFilter,
     approvalFilter, setApprovalFilter, sortBy, toggleSort,
     currentPage, perPage, pagination, handlePageChange,
-    isModalOpen, setModalOpen, selectedAR, setSelectedAR,
+    isModalOpen, setModalOpen, isDetailOpen, setDetailOpen,
+    selectedAR, setSelectedAR,
     serverErrors, toasts, loadData,
     createAR, updateAR, deleteAR, approveAR, formatCurrency, ability, ApprovalStatus
   };
