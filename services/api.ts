@@ -514,7 +514,7 @@ export const api = {
     delete: async (id: string) => {
       await request(`/customers/${id}`, { method: 'DELETE' });
     },
-    customer_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+    customer_list: async (q: string = ''): Promise<{ id: string, name: string, address?: string, deposit?: number }[]> => {
       const json = await request(`/customers/customer_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
     }
