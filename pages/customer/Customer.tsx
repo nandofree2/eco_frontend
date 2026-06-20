@@ -7,11 +7,12 @@ import {
 } from 'lucide-react';
 import CustomerModal from './CustomerModal';
 import CustomerDetailModal from './CustomerDetailModal';
+import CustomerDepositModal from './CustomerDepositModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useCustomer } from './CustomerScript';
 
 const Customer: React.FC = () => {
-  const { customers, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedCustomer, setSelectedCustomer, customerToDelete, setCustomerToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, confirmDelete, toggleSort, handlePageChange
+  const { customers, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDepositModalOpen, setDepositModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedCustomer, setSelectedCustomer, customerToDelete, setCustomerToDelete, actionLoading, deleteLoading, depositLoading, serverErrors, setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, confirmDelete, handleDeposit, confirmDeposit, toggleSort, handlePageChange
   } = useCustomer();
 
   const getMembershipBadge = (membership?: number) => {
@@ -114,7 +115,6 @@ const Customer: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Payable</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Ordered Amount</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Deposit</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-left">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -138,7 +138,13 @@ const Customer: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
 
-                        <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors capitalize">{customer.name}</span>
+                        <button
+                          onClick={() => { setSelectedCustomer(customer); setDetailModalOpen(true); }}
+                          className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors capitalize text-left hover:underline underline-offset-2 decoration-eco-400"
+                          title="View customer details"
+                        >
+                          {customer.name}
+                        </button>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -182,19 +188,6 @@ const Customer: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
                         Rp {customer.deposit}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
-                        <button onClick={() => { setSelectedCustomer(customer); setDetailModalOpen(true); }} className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-indigo-100" title="Full View">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setSelectedCustomer(customer); setServerErrors(null); setModalOpen(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-blue-100" title="Edit Access">
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button onClick={() => { setCustomerToDelete(customer); setDeleteModalOpen(true); }} className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100" title="Revoke Profile">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -245,7 +238,20 @@ const Customer: React.FC = () => {
       </div>
 
       <CustomerModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} onSubmit={handleCreateOrUpdate} customer={selectedCustomer} loading={actionLoading} serverErrors={serverErrors} />
-      <CustomerDetailModal isOpen={isDetailModalOpen} onClose={() => setDetailModalOpen(false)} customer={selectedCustomer} />
+      <CustomerDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        customer={selectedCustomer}
+        onEdit={(c) => { setDetailModalOpen(false); setSelectedCustomer(c); setServerErrors(null); setModalOpen(true); }}
+        onDeposit={(c) => handleDeposit(c)}
+      />
+      <CustomerDepositModal
+        isOpen={isDepositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        customer={selectedCustomer}
+        onConfirm={confirmDeposit}
+        loading={depositLoading}
+      />
       <DeleteConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={confirmDelete} title="Confirm Revocation" message={`Are you sure you want to remove the record for "${customerToDelete?.name}"? All membership history will be archived.`} loading={deleteLoading} />
     </div>
   );

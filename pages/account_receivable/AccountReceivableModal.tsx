@@ -115,7 +115,7 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
-    if (Number(val) > remainingBill && !record) { // Only restrict if new record
+    if (Number(val) > remainingBill) {
       val = remainingBill.toString();
     }
     setFormData(prev => ({ ...prev, amount: val }));
@@ -261,6 +261,7 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
                   <input
                     type="number"
+                    step="any"
                     value={formData.amount}
                     onChange={handleAmountChange}
                     className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium"

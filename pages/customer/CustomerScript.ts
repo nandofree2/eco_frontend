@@ -23,12 +23,14 @@ export const useCustomer = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [isDepositModalOpen, setDepositModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
   const [customerToDelete, setCustomerToDelete] = useState<Customer | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [depositLoading, setDepositLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<Record<string, string[]> | null>(null);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -117,6 +119,27 @@ export const useCustomer = () => {
     });
   };
 
+  const handleDeposit = (customer: Customer) => {
+    setSelectedCustomer(customer);
+    setDetailModalOpen(false);
+    setDepositModalOpen(true);
+  };
+
+  const confirmDeposit = async (amount: number) => {
+    if (!selectedCustomer) return;
+    setDepositLoading(true);
+    try {
+      await api.customers.deposit(selectedCustomer.id, amount);
+      addToast('success', `Deposit of Rp ${amount.toLocaleString('id-ID')} added to "${selectedCustomer.name}".`);
+      setDepositModalOpen(false);
+      loadCustomers(searchTerm, sortBy, 1);
+    } catch (err: any) {
+      addToast('error', err.message || 'Failed to update deposit.');
+    } finally {
+      setDepositLoading(false);
+    }
+  };
+
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
@@ -139,18 +162,23 @@ export const useCustomer = () => {
     setDetailModalOpen,
     isDeleteModalOpen,
     setDeleteModalOpen,
+    isDepositModalOpen,
+    setDepositModalOpen,
     selectedCustomer,
     setSelectedCustomer,
     customerToDelete,
     setCustomerToDelete,
     actionLoading,
     deleteLoading,
+    depositLoading,
     serverErrors,
     setServerErrors,
     toasts,
     loadCustomers,
     handleCreateOrUpdate,
     confirmDelete,
+    handleDeposit,
+    confirmDeposit,
     toggleSort,
     handlePageChange
   };
