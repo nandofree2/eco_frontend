@@ -24,9 +24,14 @@ export interface Customer {
   name: string;
   email: string;
   phone_number?: string;
+  phone?: string;
   address?: string;
   membership: Membership;
   description?: string;
+  receivable?: number;
+  payable?: number;
+  ordered_amount?: number;
+  deposit?: number;
   created_at: string;
   updated_at?: string;
 }

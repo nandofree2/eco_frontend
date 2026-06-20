@@ -1,138 +1,187 @@
 import React from 'react';
-import { X, Users, Mail, Phone, MapPin, Calendar, Clock, Activity } from 'lucide-react';
-import { Customer } from '../../types';
+import { Customer, Membership } from '../../types';
+import {
+  X, Users, Mail, Phone, MapPin, Banknote,
+  Wallet, TrendingUp, CreditCard, Crown, Edit2, FileText
+} from 'lucide-react';
 
 interface CustomerDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   customer: Customer | null;
+  onEdit?: (customer: Customer) => void;
+  onDeposit?: (customer: Customer) => void;
 }
 
-const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({ isOpen, onClose, customer }) => {
+const CustomerDetailModal: React.FC<CustomerDetailModalProps> = ({
+  isOpen, onClose, customer, onEdit, onDeposit
+}) => {
   if (!isOpen || !customer) return null;
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+  const formatCurrency = (value?: number) => {
+    if (value == null || isNaN(value)) return 'Rp 0';
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency', currency: 'IDR',
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    }).format(value);
   };
 
-  const getMembershipBadge = (membership?: number) => {
+  const getMembershipBadge = (membership?: Membership) => {
     switch (membership) {
-      case 0: return { label: 'REGULAR', color: 'bg-gray-100 text-gray-700 border-gray-200' };
-      case 1: return { label: 'MEMBER', color: 'bg-green-100 text-green-700 border-green-200' };
-      case 2: return { label: 'VIP', color: 'bg-purple-100 text-purple-700 border-purple-200' };
-      default: return { label: 'REGULAR', color: 'bg-gray-100 text-gray-700 border-gray-200' };
+      case Membership.VIP: return { label: 'VIP', color: 'bg-purple-100 text-purple-700 border-purple-200', icon: <Crown className="w-3 h-3" /> };
+      case Membership.Member: return { label: 'MEMBER', color: 'bg-green-100 text-green-700 border-green-200', icon: null };
+      case Membership.Regular:
+      default: return { label: 'REGULAR', color: 'bg-gray-100 text-gray-700 border-gray-200', icon: null };
     }
   };
 
+  const badge = getMembershipBadge(customer.membership);
+  const phoneValue = customer.phone_number || customer.phone;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all border border-gray-100">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all border border-gray-100 flex flex-col max-h-[90vh]">
         {/* Header */}
-        <div className="bg-eco-600 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Customer Details
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg"
-          >
-            <X className="w-6 h-6" />
+        <div className="bg-eco-600 px-4 py-3 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-white/20 rounded-lg">
+              <Users className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-white leading-tight">Customer Details - [ {customer.name || 'Customer'} ]</h2>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-white/80 hover:text-white transition-colors p-1 hover:bg-white/10 rounded-lg">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-          {/* Main Info */}
-          <div className="flex flex-col gap-4 items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-eco-50 flex items-center justify-center text-eco-600 border-4 border-white shadow-lg shrink-0">
-              <Users className="w-12 h-12" />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-gray-900">{customer.name}</h3>
-              <div className="flex justify-center">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getMembershipBadge(customer.membership).color}`}>
-                  {getMembershipBadge(customer.membership).label}
-                </span>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+          {/* Identity */}
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 rounded-lg bg-eco-100 text-eco-600 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Name</p>
+                  <h3 className="text-base font-black text-gray-900 leading-tight truncate">{customer.name || '---'}</h3>
+                </div>
               </div>
-              <div className="flex flex-col gap-1 mt-2">
-                <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
-                  <Mail className="w-4 h-4" />
-                  {customer.email}
-                </p>
-                {customer.phone && (
-                  <p className="text-gray-500 flex items-center justify-center gap-2 text-sm">
-                    <Phone className="w-4 h-4" />
-                    {customer.phone}
-                  </p>
-                )}
+
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Membership</p>
+                  <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black border ${badge.color}`}>
+                    {badge.icon}{badge.label}
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-6">
-            {/* Contact & Address Section */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5" />
-                Contact Information
-              </h4>
-              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-4">
-                <div>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Address</p>
-                  <p className="text-sm text-gray-700 leading-relaxed font-medium">
-                    {customer.address || 'No address provided'}
-                  </p>
+          {/* Contact Information */}
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Contact Information</h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                  <Phone className="w-5 h-5" />
                 </div>
-                {customer.description && (
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Notes / Description</p>
-                    <p className="text-sm text-gray-700 leading-relaxed font-medium italic">
-                      "{customer.description}"
-                    </p>
-                  </div>
-                )}
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Phone</p>
+                  <p className="text-sm font-bold text-gray-900 leading-tight break-words">{phoneValue || '---'}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Email</p>
+                  <p className="text-sm font-bold text-gray-900 leading-tight break-words">{customer.email || '---'}</p>
+                </div>
               </div>
             </div>
 
-            {/* Metadata Section */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <Activity className="w-3.5 h-3.5" />
-                System Information
-              </h4>
-              <div className="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" /> Created At
-                  </span>
-                  <span className="text-sm font-bold text-gray-900">{formatDate(customer.created_at)}</span>
+            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+              <div className="w-10 h-10 rounded-lg bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Address</p>
+                <p className="text-sm font-bold text-gray-900 leading-relaxed">{customer.address || 'No address provided'}</p>
+              </div>
+            </div>
+
+            {customer.description && (
+              <div className="flex items-start gap-3 p-3 bg-blue-50/50 rounded-xl border border-blue-100/50">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                  <FileText className="w-5 h-5" />
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-500 flex items-center gap-2">
-                    <Clock className="w-4 h-4" /> Updated At
-                  </span>
-                  <span className="text-sm font-bold text-gray-900">{formatDate(customer.updated_at)}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Notes</p>
+                  <p className="text-xs font-medium text-gray-700 leading-relaxed italic">"{customer.description}"</p>
                 </div>
+              </div>
+            )}
+          </div>
+
+          {/* Financial Breakdown */}
+          <div className="space-y-2">
+            <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-100 pb-1">Financial Summary</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Wallet className="w-3.5 h-3.5 text-orange-400" />
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Receivable</span>
+                </div>
+                <p className="text-sm font-black text-orange-600 leading-tight">{formatCurrency(customer.receivable)}</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <CreditCard className="w-3.5 h-3.5 text-red-400" />
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Payable</span>
+                </div>
+                <p className="text-sm font-black text-red-600 leading-tight">{formatCurrency(customer.payable)}</p>
+              </div>
+              <div className="p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Ordered</span>
+                </div>
+                <p className="text-sm font-black text-blue-600 leading-tight">{formatCurrency(customer.ordered_amount)}</p>
+              </div>
+              <div className="p-3 bg-eco-50 rounded-xl border border-eco-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Banknote className="w-3.5 h-3.5 text-eco-500" />
+                  <span className="text-[9px] font-bold text-eco-700 uppercase tracking-widest">Deposit</span>
+                </div>
+                <p className="text-sm font-black text-eco-700 leading-tight">{formatCurrency(customer.deposit)}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 bg-gray-50 border-t border-gray-100 flex justify-end">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 bg-white border border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 active:scale-95 transition-all shadow-sm"
-          >
-            Close
-          </button>
+        <div className="bg-gray-50 px-4 py-3 flex items-center justify-end gap-3 border-t border-gray-100">
+          {onEdit && (
+            <button onClick={() => onEdit(customer)} className="px-4 py-2.5 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-transparent hover:border-blue-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
+              <Edit2 className="w-4 h-4" /> Edit
+            </button>
+          )}
+          {onDeposit && (
+            <button onClick={() => onDeposit(customer)} className="px-4 py-2.5 bg-eco-600 text-white hover:bg-eco-700 border border-transparent font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm">
+              <Banknote className="w-4 h-4" /> Deposit
+            </button>
+          )}
         </div>
       </div>
     </div>

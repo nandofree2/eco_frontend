@@ -517,6 +517,13 @@ export const api = {
     customer_list: async (q: string = ''): Promise<{ id: string, name: string, address?: string, deposit?: number }[]> => {
       const json = await request(`/customers/customer_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
+    },
+    deposit: async (id: string, amount: number) => {
+      const json = await request(`/customers/${id}/deposit`, {
+        method: 'POST',
+        body: JSON.stringify({ customer: { deposit: amount } })
+      });
+      return mapAttributes(json.data || json);
     }
   },
   stock_products: {
