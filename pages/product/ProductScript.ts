@@ -61,12 +61,7 @@ export const useProduct = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadProducts(searchTerm, sortBy, currentPage);
-    }
-  }, [currentPage]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: Partial<Product>) => {
     setActionLoading(true);
@@ -120,6 +115,7 @@ export const useProduct = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadProducts(searchTerm, sortBy, page);
   };
 
   return {

@@ -60,12 +60,7 @@ export const useBranch = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadBranches(searchTerm, sortBy, currentPage);
-    }
-  }, [currentPage]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: Partial<Branch>) => {
     setActionLoading(true);
@@ -119,6 +114,7 @@ export const useBranch = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadBranches(searchTerm, sortBy, page);
   };
 
   const getStatusBadge = (status: any) => {

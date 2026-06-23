@@ -77,12 +77,7 @@ export const useAdjustmentProduct = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy, branchFilter]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadAdjustments(searchTerm, sortBy, currentPage, branchFilter);
-    }
-  }, [currentPage]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: Partial<AdjustmentProduct>) => {
     setActionLoading(true);
@@ -150,6 +145,7 @@ export const useAdjustmentProduct = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadAdjustments(searchTerm, sortBy, page, branchFilter);
   };
 
   const formatDate = (dateString?: string) => {

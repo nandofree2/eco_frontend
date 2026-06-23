@@ -62,12 +62,7 @@ export const useRole = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadRoles(searchTerm, sortBy, currentPage);
-    }
-  }, [currentPage]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: Partial<Role>) => {
     setActionLoading(true);
@@ -121,6 +116,7 @@ export const useRole = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadRoles(searchTerm, sortBy, page);
   };
 
   return {

@@ -106,8 +106,7 @@ const CustomerModal: React.FC<CustomerModalProps> = ({ isOpen, onClose, onSubmit
               <label className={`block text-sm font-bold mb-1 ${hasError('email') ? 'text-red-600' : 'text-gray-700'}`}>Email Address</label>
               <input
                 ref={emailRef}
-                type="email"
-                required
+                type="text"
                 className={`w-full px-4 py-2 border rounded-xl outline-none transition-all ${hasError('email') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-200 focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}

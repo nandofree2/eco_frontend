@@ -80,12 +80,7 @@ export const useUserList = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, selectedRoleName, sortBy, loadData]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1 || (searchTerm === '' && selectedRoleName === '')) {
-      loadData(searchTerm, selectedRoleName, sortBy, currentPage);
-    }
-  }, [currentPage, loadData, searchTerm, selectedRoleName, sortBy]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: any) => {
     setActionLoading(true);
@@ -140,6 +135,7 @@ export const useUserList = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadData(searchTerm, selectedRoleName, sortBy, page);
   };
 
   const getRoleColor = (roleName: any) => {

@@ -89,12 +89,7 @@ export const useSalesOrder = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy, branchFilter, customerFilter]);
 
-  // Page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
-    }
-  }, [currentPage]);
+  // Page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: any) => {
     setActionLoading(true);
@@ -149,6 +144,7 @@ export const useSalesOrder = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadOrders(searchTerm, sortBy, page, branchFilter, customerFilter);
   };
 
   const formatDate = (dateString?: string) => {
