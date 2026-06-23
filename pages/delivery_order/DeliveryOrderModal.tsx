@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DeliveryOrder, DeliveryOrderItem, Branch, Customer, SalesOrder } from '../../types';
-import { X, ShoppingCart, AlertCircle, Loader2, Plus, Building2, FileText, Package, Users, Receipt, Percent, DollarSign, CheckSquare } from 'lucide-react';
+import { X, ShoppingCart, AlertCircle, Loader2, Plus, Building2, FileText, Package, Users, Receipt, Percent, DollarSign, CheckSquare, Calendar } from 'lucide-react';
+import { formatYmdToDmy, parseDmyToYmd, formatDateInput } from '../../services/helper';
 import SearchableDropdownDelivery from '../../components/SearchableDropdownDelivery';
 import { api } from '../../services/api';
 
@@ -21,6 +22,8 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
   const [customerName, setCustomerName] = useState('');
   const [description, setDescription] = useState('');
   const [invoiced_date, setInvoicedDate] = useState('');
+  const [invoicedDateInput, setInvoicedDateInput] = useState('');
+  const datePickerRef = useRef<HTMLInputElement>(null);
   const [salesOrderId, setSalesOrderId] = useState('');
   const [salesOrderCode, setSalesOrderCode] = useState('');
   const [salesOrderName, setSalesOrderName] = useState('');
@@ -38,7 +41,9 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         setCustomerName(order.customer_name || '');
         setSalesOrderId(order.sales_order_id || '');
         setDescription(order.description || '');
-        setInvoicedDate(order.invoiced_date || '');
+        const ymd = order.invoiced_date ? order.invoiced_date.split('T')[0] : '';
+        setInvoicedDate(ymd);
+        setInvoicedDateInput(formatYmdToDmy(ymd));
         const mappedItems = (order.delivery_order_items || []).map(item => ({
           ...item,
           product_name: item.product_name || (item as any).product?.name || (item as any).sales_order_item?.product?.name,
@@ -53,6 +58,7 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
         setSalesOrderId('');
         setDescription('');
         setInvoicedDate('');
+        setInvoicedDateInput('');
         setItems([]);
         setDeletedItemIds([]);
       }
@@ -63,6 +69,11 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!salesOrderId) newErrors.sales_order_id = 'Sales Order is required';
+    if (!invoicedDateInput) {
+      newErrors.invoiced_date = 'Invoice date is required';
+    } else if (!invoiced_date) {
+      newErrors.invoiced_date = 'Invoice date must be in DD/MM/YYYY format';
+    }
 
     if (items.length === 0) {
       newErrors.items = 'At least one item is required';
@@ -79,6 +90,28 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleDateInputChange = (val: string) => {
+    const formatted = formatDateInput(val, invoicedDateInput);
+    setInvoicedDateInput(formatted);
+    
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      if (ymd) {
+        setInvoicedDate(ymd);
+      } else {
+        setInvoicedDate('');
+      }
+    } else {
+      setInvoicedDate('');
+    }
+  };
+
+  const handleDatePickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setInvoicedDate(ymd);
+    setInvoicedDateInput(formatYmdToDmy(ymd));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -224,15 +257,36 @@ const DeliveryOrderModal: React.FC<DeliveryOrderModalProps> = ({
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5 text-eco-600" /> Invoice Date
+                    <Calendar className="w-3.5 h-3.5 text-eco-600" /> Invoice Date
                   </label>
-                  <input
-                    type="date"
-                    value={invoiced_date}
-                    onChange={(e) => setInvoicedDate(e.target.value)}
-                    onClick={(e) => (e.target as any).showPicker?.()}
-                    className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 focus:ring-eco-500/20 rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium text-gray-800 cursor-pointer"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      placeholder="DD/MM/YYYY"
+                      value={invoicedDateInput}
+                      onChange={(e) => handleDateInputChange(e.target.value)}
+                      className={`w-full pl-3 pr-10 py-1.5 bg-gray-50 border ${errors.invoiced_date || serverErrors?.invoiced_date ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium text-gray-800`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => datePickerRef.current?.showPicker?.()}
+                      className="absolute right-2 text-gray-400 hover:text-eco-600 transition-colors p-1"
+                    >
+                      <Calendar className="w-4 h-4" />
+                    </button>
+                    <input
+                      type="date"
+                      ref={datePickerRef}
+                      value={invoiced_date}
+                      onChange={(e) => handleDatePickerChange(e.target.value)}
+                      className="sr-only"
+                    />
+                  </div>
+                  {(errors.invoiced_date || serverErrors?.invoiced_date) && (
+                    <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 mt-0.5">
+                      <AlertCircle className="w-2.5 h-2.5" /> {errors.invoiced_date || serverErrors?.invoiced_date?.[0]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -265,7 +265,7 @@ export const api = {
     delete: async (id: string) => {
       await request(`/products/${id}`, { method: 'DELETE' });
     },
-    product_list: async (q: string = '', selectedProductIds?: string[]): Promise<{ id: string, name: string }[]> => {
+    product_list: async (q: string = '', selectedProductIds?: string[]): Promise<{ id: string, name: string, base_price?: number }[]> => {
       const params = new URLSearchParams();
       params.append('q', q);
       if (selectedProductIds && selectedProductIds.length > 0) {
@@ -697,10 +697,10 @@ export const api = {
   invoices: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string, deadlineStatus?: string, paymentStatus?: string): Promise<PaginatedResponse<Invoice>> => {
       const deadlineMap: Record<string, string> = { normal: '0', overdue: '1', closed: '2' };
-      const paymentMap: Record<string, string> = { unpaid: '0', paid: '1', partial_payment: '2' };
+      const paymentMap: Record<string, string> = { unpaid: '0', partial_payment: '1', fully_paid: '2' };
 
       const params = new URLSearchParams();
-      if (query) params.append('q[code_or_delivery_order_sales_order_code_or_delivery_order_code_cont]', query);
+      if (query) params.append('q[code_or_delivery_order_sales_order_code_or_delivery_order_code_or_delivery_order_delivery_order_items_sales_order_item_product_name_cont]', query);
       if (branchId) params.append('q[branch_id_eq]', branchId);
       if (customerId) params.append('q[delivery_order_sales_order_customer_id_eq]', customerId);
       if (deadlineStatus && deadlineMap[deadlineStatus] !== undefined) params.append('q[deadline_status_eq]', deadlineMap[deadlineStatus]);
