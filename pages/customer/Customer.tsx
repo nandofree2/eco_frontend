@@ -169,25 +169,25 @@ const Customer: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="space-y-0.5">
                         <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          Rp {customer.receivable}
+                          Rp {Math.round(customer.receivable)}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="space-y-0.5">
                         <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                          Rp {customer.payable}
+                          Rp {Math.round(customer.payable)}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        Rp {customer.ordered_amount}
+                        Rp {Math.round(customer.ordered_amount)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                        Rp {customer.deposit}
+                        Rp {Math.round(customer.deposit)}
                       </div>
                     </td>
                   </tr>

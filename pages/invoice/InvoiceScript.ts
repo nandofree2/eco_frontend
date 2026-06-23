@@ -91,13 +91,6 @@ export const useInvoice = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy, branchFilter, customerFilter, deadlineFilter, paymentFilter]);
 
-  // Page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter, deadlineFilter, paymentFilter);
-    }
-  }, [currentPage]);
-
   const toggleSort = (field: string) => {
     setSortBy(prev => {
       const [currField, currDir] = prev.split(' ');
@@ -109,6 +102,7 @@ export const useInvoice = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadOrders(searchTerm, sortBy, page);
   };
 
   const formatDate = (dateString?: string) => {
@@ -123,8 +117,6 @@ export const useInvoice = () => {
     if (value == null || isNaN(value)) return 'Rp 0';
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   };
-
-
 
   return {
     orders, branches, customers, loading, searchTerm, setSearchTerm,

@@ -60,12 +60,7 @@ export const useCategory = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm, sortBy]);
 
-  // Handle page changes
-  useEffect(() => {
-    if (currentPage !== 1) {
-      loadCategories(searchTerm, sortBy, currentPage);
-    }
-  }, [currentPage]);
+  // Handle page changes (load happens directly in handlePageChange)
 
   const handleCreateOrUpdate = async (formData: Partial<Category>) => {
     setActionLoading(true);
@@ -119,6 +114,7 @@ export const useCategory = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
+    loadCategories(searchTerm, sortBy, page);
   };
 
   return {

@@ -62,9 +62,7 @@ export const useProvince = () => {
 
   // Handle page changes
   useEffect(() => {
-    if (currentPage !== 1) {
-      loadProvinces(searchTerm, sortBy, currentPage);
-    }
+    loadProvinces(searchTerm, sortBy, currentPage);
   }, [currentPage]);
 
   const handleCreateOrUpdate = async (formData: Partial<Province>) => {

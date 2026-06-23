@@ -25,7 +25,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     product_type: ProductType.Physical,
     status_product: ProductStatus.Unreleased,
     description: '',
-    base_price: 0
+    base_price: ""
   });
 
   const nameRef = useRef<HTMLInputElement>(null);
@@ -55,7 +55,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         product_type: product.product_type ?? ProductType.Physical,
         status_product: product.status_product ?? ProductStatus.Unreleased,
         description: product.description || '',
-        base_price: product.base_price || 0
+        base_price: product.base_price || ""
       });
     } else {
       setFormData({
@@ -66,7 +66,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         product_type: ProductType.Physical,
         status_product: ProductStatus.Unreleased,
         description: '',
-        base_price: 0
+        base_price: ""
       });
     }
   }, [product, categories, variants, units, isOpen]);
@@ -219,7 +219,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                 <input
                   type="number"
                   required
-                  min="0"
                   className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 font-bold text-gray-700"
                   value={formData.base_price}
                   onChange={(e) => setFormData({ ...formData, base_price: Number(e.target.value) })}
