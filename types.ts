@@ -176,8 +176,8 @@ export enum ApprovalStatus {
 
 export enum PaymentStatus {
   Unpaid = "unpaid",
-  PartialPayment = "partial_payment",
   FullyPaid = "fully_paid",
+  PartialPayment = "partial_payment",
 }
 
 export enum DeadlineStatus {
@@ -246,6 +246,7 @@ export interface SalesOrder {
   progress_status: ProgressStatus;
   payment_status: PaymentStatus;
   sales_order_items: SalesOrderItem[];
+  sales_order_date: string;
   created_at: string;
   updated_at: string;
 }

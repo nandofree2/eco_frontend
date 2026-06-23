@@ -181,8 +181,8 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Created At</span>
-                <span className="text-xs font-bold text-gray-700">{formatDate(order.created_at)}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Sales Order Created At</span>
+                <span className="text-xs font-bold text-gray-700">{formatDate(order.sales_order_date)}</span>
 
               </div>
               <div className="flex items-center gap-1.5 text-gray-400">

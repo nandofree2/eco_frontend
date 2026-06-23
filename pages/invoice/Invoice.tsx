@@ -157,7 +157,7 @@ const Invoice: React.FC = () => {
             >
               <option value="">All Payments</option>
               <option value="unpaid">Unpaid</option>
-              <option value="paid">Paid</option>
+              <option value="fully_paid">Fully Paid</option>
               <option value="partial_payment">Partial Payment</option>
             </select>
             {paymentFilter && (

@@ -4,6 +4,7 @@ import { Search, ChevronDown, Loader2, X } from 'lucide-react';
 interface Option {
   id: string;
   name: string;
+  [key: string]: any;
 }
 
 interface SearchableDropdownProps {
@@ -11,6 +12,7 @@ interface SearchableDropdownProps {
   value: string;
   onChange: (id: string, name?: string) => void;
   onSearch: (query: string) => Promise<Option[]>;
+  onSelect?: (option: Option) => void;
   placeholder?: string;
   error?: boolean;
   required?: boolean;
@@ -23,6 +25,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   value,
   onChange,
   onSearch,
+  onSelect,
   placeholder = "Search...",
   error = false,
   required = false,
@@ -94,6 +97,7 @@ const SearchableDropdown: React.FC<SearchableDropdownProps> = ({
   const selectOption = (option: Option) => {
     setDisplayName(option.name);
     onChange(option.id, option.name);
+    onSelect?.(option);
     setIsOpen(false);
     setQuery('');
   };

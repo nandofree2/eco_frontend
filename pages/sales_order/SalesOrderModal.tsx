@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { SalesOrder, SalesOrderItem, Branch, Customer } from '../../types';
-import { X, ShoppingCart, AlertCircle, Loader2, Plus, Building2, FileText, Package, Users, Receipt, Percent, DollarSign, CheckSquare } from 'lucide-react';
+import { formatDateOnly, formatYmdToDmy, parseDmyToYmd, formatDateInput } from '../../services/helper';
+import { X, ShoppingCart, AlertCircle, Loader2, Plus, Building2, FileText, Package, Users, Receipt, Percent, DollarSign, CheckSquare, Calendar } from 'lucide-react';
 import SearchableDropdown from '../../components/SearchableDropdown';
 import { api } from '../../services/api';
 
@@ -29,6 +30,9 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
   const [customerName, setCustomerName] = useState('');
   const [description, setDescription] = useState('');
   const [taxInclude, setTaxInclude] = useState(false);
+  const [salesOrderDate, setSalesOrderDate] = useState('');
+  const [salesOrderDateInput, setSalesOrderDateInput] = useState('');
+  const datePickerRef = useRef<HTMLInputElement>(null);
   const [paymentDeadline, setPaymentDeadline] = useState<number | ''>('');
   const [discountPrice, setDiscountPrice] = useState<number>(0);
   const [taxPrice, setTaxPrice] = useState<number>(0);
@@ -67,6 +71,9 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setDiscountPrice(order.discount_price || 0);
         setShippingPrice(order.shipping_price || 0);
         setTaxPrice(order.tax_price || 0);
+        const ymd = order.sales_order_date ? order.sales_order_date.split('T')[0] : '';
+        setSalesOrderDate(ymd);
+        setSalesOrderDateInput(formatYmdToDmy(ymd));
         const mappedItems = (order.sales_order_items || []).map(item => ({
           ...item,
           product_name: item.product_name || (item as any).product?.name
@@ -83,6 +90,8 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         setDiscountPrice(0);
         setShippingPrice(0);
         setTaxPrice(0);
+        setSalesOrderDate('');
+        setSalesOrderDateInput('');
         setItems([{ product_id: '', quantity: 1, price: 0, total_price: 0 }]);
         setDeletedItemIds([]);
       }
@@ -107,6 +116,11 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
     const newErrors: Record<string, string> = {};
     if (!branchId) newErrors.branch_id = 'Branch is required';
     if (!customerId) newErrors.customer_id = 'Customer is required';
+    if (!salesOrderDateInput) {
+      newErrors.sales_order_date = 'Order date is required';
+    } else if (!salesOrderDate) {
+      newErrors.sales_order_date = 'Order date must be in DD/MM/YYYY format';
+    }
     if (paymentDeadline === '' || Number(paymentDeadline) <= 0) newErrors.payment_deadline = 'Payment deadline is required (must be > 0)';
 
     if (items.length === 0) {
@@ -127,6 +141,28 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleDateInputChange = (val: string) => {
+    const formatted = formatDateInput(val, salesOrderDateInput);
+    setSalesOrderDateInput(formatted);
+    
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      if (ymd) {
+        setSalesOrderDate(ymd);
+      } else {
+        setSalesOrderDate('');
+      }
+    } else {
+      setSalesOrderDate('');
+    }
+  };
+
+  const handleDatePickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setSalesOrderDate(ymd);
+    setSalesOrderDateInput(formatYmdToDmy(ymd));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -166,6 +202,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
       tax_price: taxInclude ? 0 : safeTax,
       total_price: Math.round(subtotal * 100) / 100,
       grand_total: Math.round(grandTotal * 100) / 100,
+      sales_order_date: salesOrderDate,
       sales_order_items_attributes,
     };
 
@@ -227,7 +264,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-5">
+        <div className="flex-1 overflow-y-auto p-9 sm:p-5">
           <form id="sales-order-form" onSubmit={handleSubmit} className="space-y-4">
 
             {/* General Info */}
@@ -330,21 +367,38 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   )}
                 </div>
 
-                {/* Tax Include */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckSquare className="w-3.5 h-3.5 text-eco-600" /> Tax Include
+                    <CheckSquare className="w-3.5 h-3.5 text-eco-600" /> SO Create Date
                   </label>
-                  <div className="flex items-center gap-2 py-1.5">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      placeholder="DD/MM/YYYY"
+                      value={salesOrderDateInput}
+                      onChange={(e) => handleDateInputChange(e.target.value)}
+                      className={`w-full pl-3 pr-10 py-1.5 bg-gray-50 border ${errors.sales_order_date || serverErrors?.sales_order_date ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium text-gray-800`}
+                    />
                     <button
                       type="button"
-                      onClick={() => setTaxInclude(!taxInclude)}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${taxInclude ? 'bg-eco-600' : 'bg-gray-300'}`}
+                      onClick={() => datePickerRef.current?.showPicker?.()}
+                      className="absolute right-2 text-gray-400 hover:text-eco-600 transition-colors p-1"
                     >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${taxInclude ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <Calendar className="w-4 h-4" />
                     </button>
-                    <span className="text-xs font-bold text-gray-600">{taxInclude ? 'Yes' : 'No'}</span>
+                    <input
+                      type="date"
+                      ref={datePickerRef}
+                      value={salesOrderDate}
+                      onChange={(e) => handleDatePickerChange(e.target.value)}
+                      className="sr-only"
+                    />
                   </div>
+                  {(errors.sales_order_date || serverErrors?.sales_order_date) && (
+                    <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 mt-0.5">
+                      <AlertCircle className="w-2.5 h-2.5" /> {errors.sales_order_date || serverErrors?.sales_order_date?.[0]}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -410,6 +464,17 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                               setItems(prev => {
                                 const newItems = [...prev];
                                 newItems[index] = { ...newItems[index], product_id: id, product_name: name || newItems[index].product_name };
+                                return newItems;
+                              });
+                            }}
+                            onSelect={(option) => {
+                              const basePrice = option.base_price != null ? sanitizeNumber(option.base_price) : 0;
+                              setItems(prev => {
+                                const newItems = [...prev];
+                                const updated = { ...newItems[index], price: basePrice };
+                                const qty = sanitizeNumber(updated.quantity || 0);
+                                updated.total_price = Math.round(qty * basePrice * 100) / 100;
+                                newItems[index] = updated;
                                 return newItems;
                               });
                             }}
@@ -528,8 +593,17 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                 {/* Tax */}
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
-                    <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Tax
-                    {taxInclude && <span className="text-[8px] bg-eco-100 text-eco-700 px-1.5 py-0.5 rounded font-black">INCLUDED</span>}
+                    <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Include Tax
+                    <div className="flex items-center gap-2 py-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setTaxInclude(!taxInclude)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${taxInclude ? 'bg-eco-600' : 'bg-gray-300'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow-sm ${taxInclude ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                      <span className="text-xs font-bold text-gray-600">{taxInclude ? 'Yes' : 'No'}</span>
+                    </div>
                   </span>
                   {taxInclude ? (
                     <span className="text-xs font-bold text-gray-400 italic">Included in price</span>
