@@ -12,15 +12,12 @@ import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 
 const SalesOrder: React.FC = () => {
   const {
-    orders, branches, customers, loading, searchTerm, setSearchTerm,
-    branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, pagination, isModalOpen, setModalOpen,
-    isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen,
-    selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
-    orderToDelete, setOrderToDelete, actionLoading, deleteLoading, PaymentStatus,
-    serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus, ProgressStatus,
-    handleCreateOrUpdate, confirmDelete, handleApprove, toggleSort, handlePageChange,
-    formatDate, formatCurrency, currentPage, perPage, approveLoading
+    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter,
+    customerFilter, setCustomerFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder, orderForDetail,
+    setOrderForDetail, orderToDelete, setOrderToDelete, actionLoading, deleteLoading, PaymentStatus, serverErrors,
+    setServerErrors, toasts, loadOrders, ApprovalStatus, ProgressStatus, handleCreateOrUpdate, confirmDelete,
+    handleApprove, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage, approveLoading
   } = useSalesOrder();
 
   return (
@@ -299,7 +296,6 @@ const SalesOrder: React.FC = () => {
         onApprove={handleApprove}
         approveLoading={approveLoading}
         onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
-        onDelete={(order) => { setOrderToDelete(order); setDetailModalOpen(false); setDeleteModalOpen(true); }}
       />
 
       <DeleteConfirmModal

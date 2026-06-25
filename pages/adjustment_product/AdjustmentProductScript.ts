@@ -9,6 +9,7 @@ interface Toast {
 }
 
 export const useAdjustmentProduct = () => {
+  const [approveLoading, setApproveLoading] = useState(false);
   const [adjustments, setAdjustments] = useState<AdjustmentProduct[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,8 @@ export const useAdjustmentProduct = () => {
   const [selectedAdjustment, setSelectedAdjustment] = useState<AdjustmentProduct | null>(null);
   const [adjustmentForDetail, setAdjustmentForDetail] = useState<AdjustmentProduct | null>(null);
   const [adjustmentToDelete, setAdjustmentToDelete] = useState<AdjustmentProduct | null>(null);
+  const [isApproveModalOpen, setApproveModalOpen] = useState(false);
+  const [adjustmentToApprove, setAdjustmentToApprove] = useState<string | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
@@ -104,16 +107,26 @@ export const useAdjustmentProduct = () => {
     }
   };
 
-  const handleApprove = async (id: string) => {
-    setActionLoading(true);
+  const handleApprove = (id: string) => {
+    setAdjustmentToApprove(id);
+    setApproveModalOpen(true);
+  };
+
+  const confirmApprove = async () => {
+    if (!adjustmentToApprove) return;
+    setApproveLoading(true);
     try {
-      await api.adjustment_products.approve(id);
+      await api.adjustment_products.approve(adjustmentToApprove);
       addToast('success', 'Adjustment approved successfully.');
+      // Update the detail modal object so it immediately reflects "approved"
+      setAdjustmentForDetail(prev => prev && prev.id === adjustmentToApprove ? { ...prev, approval_status: ApprovalStatus.Approved } : prev);
+      setApproveModalOpen(false);
       loadAdjustments(searchTerm, sortBy, currentPage, branchFilter);
     } catch (err: any) {
       addToast('error', err.message || 'Approval failed.');
     } finally {
-      setActionLoading(false);
+      setApproveLoading(false);
+      setAdjustmentToApprove(null);
     }
   };
 
@@ -160,6 +173,12 @@ export const useAdjustmentProduct = () => {
   };
 
   return {
-    adjustments, branches, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedAdjustment, setSelectedAdjustment, adjustmentForDetail, setAdjustmentForDetail, adjustmentToDelete, setAdjustmentToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadAdjustments, handleCreateOrUpdate, handleApprove, confirmDelete, toggleSort, handlePageChange, formatDate, AdjustmentType, ApprovalStatus
+    adjustments, branches, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter,
+    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen, setModalOpen,
+    isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedAdjustment,
+    setSelectedAdjustment, adjustmentForDetail, setAdjustmentForDetail, adjustmentToDelete, setAdjustmentToDelete,
+    isApproveModalOpen, setApproveModalOpen, adjustmentToApprove,
+    actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadAdjustments, handleCreateOrUpdate,
+    approveLoading, handleApprove, confirmApprove, confirmDelete, toggleSort, handlePageChange, formatDate, AdjustmentType, ApprovalStatus
   };
 };

@@ -11,34 +11,10 @@ import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useStockProduct } from './StockProductScript';
 
 const StockProduct: React.FC = () => {
-  const {
-    stockProducts,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    sortBy,
-    currentPage,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    selectedStockProduct,
-    setSelectedStockProduct,
-    stockProductToDelete,
-    setStockProductToDelete,
-    actionLoading,
-    deleteLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadStockProducts,
-    handleCreateOrUpdate,
-    confirmDelete,
-    toggleSort,
-    handlePageChange
+  const { stockProducts, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedStockProduct, setSelectedStockProduct, stockProductToDelete,
+    setStockProductToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadStockProducts,
+    handleCreateOrUpdate, confirmDelete, toggleSort, handlePageChange
   } = useStockProduct();
 
   return (
@@ -123,6 +99,9 @@ const StockProduct: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('product_name')}>
                   <div className="flex items-center gap-2">Product Name <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('product_code')}>
+                  <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('branch_name')}>
                   <div className="flex items-center gap-2">Branch <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
@@ -149,16 +128,15 @@ const StockProduct: React.FC = () => {
                 stockProducts.map((stock_product) => (
                   <tr key={stock_product.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-sm border border-indigo-100/50">
-                          <Package className="w-5 h-5" />
-                        </div>
-                        <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{stock_product.product_name}</span>
+                      <span className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors">{stock_product.product_name}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        {stock_product.product_code}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Building2 className="w-3.5 h-3.5 text-eco-500" />
                         {stock_product.branch_name}
                       </div>
                     </td>
@@ -171,7 +149,7 @@ const StockProduct: React.FC = () => {
                     <td className="px-6 py-4 text-center">
                       <span className={`inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold border transition-all ${stock_product.marketing_stock <= 5 ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'
                         }`}>
-                        {stock_product.marketing_stock} units
+                        {stock_product.marketing_stock || '0'} units
                       </span>
                     </td>
                   </tr>
