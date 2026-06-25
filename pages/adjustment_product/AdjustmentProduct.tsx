@@ -9,9 +9,15 @@ import {
 import AdjustmentProductModal from './AdjustmentProductModal';
 import AdjustmentProductDetailModal from './AdjustmentProductDetailModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
+import ApproveConfirmModal from '../../components/ApproveConfirmModal';
 
 const AdjustmentProduct: React.FC = () => {
-  const { adjustments, branches, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedAdjustment, setSelectedAdjustment, adjustmentForDetail, setAdjustmentForDetail, adjustmentToDelete, setAdjustmentToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadAdjustments, handleCreateOrUpdate, handleApprove, confirmDelete, toggleSort, handlePageChange, formatDate, currentPage, perPage, AdjustmentType, ApprovalStatus
+  const { adjustments, branches, loading, searchTerm, approveLoading, setSearchTerm, branchFilter, setBranchFilter,
+    sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen,
+    setDeleteModalOpen, selectedAdjustment, setSelectedAdjustment, adjustmentForDetail, setAdjustmentForDetail,
+    setAdjustmentToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadAdjustments,
+    handleCreateOrUpdate, handleApprove, confirmApprove, confirmDelete, toggleSort, handlePageChange, formatDate, currentPage,
+    perPage, AdjustmentType, ApprovalStatus, isApproveModalOpen, setApproveModalOpen
   } = useAdjustmentProduct();
 
   return (
@@ -127,11 +133,11 @@ const AdjustmentProduct: React.FC = () => {
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
                   <div className="flex items-center gap-2">Code <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Target Branch</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Input by</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Branch</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Adjustment Type</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Total Items</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Approval Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Operation Control</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -162,7 +168,12 @@ const AdjustmentProduct: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium font-mono">
-                        <Building2 className="w-4 h-4 text-gray-400" /> {adj.branch_name}
+                        {adj.creator_name}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium font-mono">
+                        {adj.branch_name}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -185,40 +196,6 @@ const AdjustmentProduct: React.FC = () => {
                         }`}>
                         {adj.approval_status?.toUpperCase() || 'DRAFT'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-0 translate-x-4">
-                        {adj.approval_status !== ApprovalStatus.Approved ? (
-                          <>
-                            <button
-                              onClick={() => handleApprove(adj.id)}
-                              className="p-2 text-green-600 hover:bg-green-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-green-100"
-                              title="Approve Adjustment"
-                              disabled={actionLoading}
-                            >
-                              <CheckCircle2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => { setSelectedAdjustment(adj); setServerErrors(null); setModalOpen(true); }}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-blue-100"
-                              title="Edit Draft"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => { setAdjustmentToDelete(adj); setDeleteModalOpen(true); }}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all shadow-sm border border-transparent hover:border-red-100"
-                              title="Discard Adjustment"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-[10px] font-black text-gray-400 uppercase tracking-widest px-4 py-2 bg-gray-50 rounded-xl border border-gray-100">
-                            <Lock className="w-3.5 h-3.5" /> Immutable
-                          </div>
-                        )}
-                      </div>
                     </td>
                   </tr>
                 ))
@@ -280,6 +257,18 @@ const AdjustmentProduct: React.FC = () => {
         isOpen={isDetailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         adjustment={adjustmentForDetail}
+        onApprove={handleApprove}
+        approveLoading={approveLoading}
+        onEdit={(adjustment) => { setSelectedAdjustment(adjustment); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
+      />
+
+      <ApproveConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setApproveModalOpen(false)}
+        onConfirm={confirmApprove}
+        title="Approve Stock Adjustment"
+        message="Are you sure you want to approve this adjustment? Once approved, it cannot be edited or deleted."
+        loading={approveLoading}
       />
 
       <DeleteConfirmModal

@@ -193,7 +193,7 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
   };
 
   const addItem = () => {
-    setItems([...items, { product_id: '', quantity: 1 }]);
+    setItems([...items, { product_id: '', quantity: 1, physical_stock: 0 }]);
   };
 
   const removeItem = (index: number) => {
@@ -326,7 +326,18 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                   <div className="relative">
                     <select
                       value={branchId}
-                      onChange={(e) => setBranchId(e.target.value)}
+                      onChange={(e) => {
+                        const newBranchId = e.target.value;
+                        if (newBranchId !== branchId) {
+                          setDeletedItemIds(prev => {
+                            const existingIds = items.map(i => i.id).filter((id): id is string => !!id);
+                            return [...prev, ...existingIds];
+                          });
+                          setItems([]);
+                          setStockWarnings({});
+                        }
+                        setBranchId(newBranchId);
+                      }}
                       className={`w-full pl-3 pr-8 py-1.5 bg-gray-50 border ${errors.branch_id || serverErrors?.branch_id ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium appearance-none`}
                       disabled={branchesLoading}
                     >
@@ -350,8 +361,19 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                   </label>
                   <select
                     value={adjustmentType}
-                    onChange={(e) => setAdjustmentType(e.target.value as AdjustmentType)}
-                    className={`w-full px-3 py-1.5 bg-gray-50 border ${errors.adjustment_type || serverErrors?.adjustment_type ? 'border-red-300 focus:ring-red-500/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium appearance-none`}
+                    onChange={(e) => {
+                      const newType = e.target.value as AdjustmentType;
+                      if (newType !== adjustmentType) {
+                        setDeletedItemIds(prev => {
+                          const existingIds = items.map(i => i.id).filter((id): id is string => !!id);
+                          return [...prev, ...existingIds];
+                        });
+                        setItems([]);
+                        setStockWarnings({});
+                      }
+                      setAdjustmentType(newType);
+                    }}
+                    className={`w-full px-3 py-1.5 bg-gray-50 border ${errors.adjustment_type || serverErrors?.adjustment_type ? 'border-red-300/20' : 'border-gray-200 focus:ring-eco-500/20'} rounded-lg outline-none focus:ring-2 transition-all text-xs font-medium appearance-none`}
                   >
                     <option value={AdjustmentType.In} className="text-green-600 font-semibold"> In (+)</option>
                     <option value={AdjustmentType.Out} className="text-red-600 font-semibold">Out (-)</option>
@@ -430,12 +452,34 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                             return api.adjustment_products.product_list_adjustment(q, branchId, adjustmentType, selectedProductIds);
                           }}
                           value={item.product_id || ''}
-                          onChange={(id, name, physicalStock) => {
+                          onChange={(id, name) => {
                             setItems(prev => {
                               const newItems = [...prev];
-                              newItems[index] = { ...newItems[index], product_id: id, product_name: name || newItems[index].product_name, physical_stock: physicalStock || newItems[index].physical_stock };
+                              newItems[index] = {
+                                ...newItems[index],
+                                product_id: id,
+                                product_name: name || newItems[index].product_name
+                              };
                               return newItems;
                             });
+                            setStockWarnings(prev => {
+                              const next = { ...prev };
+                              delete next[index];
+                              return next;
+                            });
+                          }}
+                          onSelect={(option) => {
+                            setItems(prev => {
+                              const newItems = [...prev];
+                              newItems[index] = {
+                                ...newItems[index],
+                                physical_stock: option.physical_stock != null ? option.physical_stock : 0
+                              };
+                              return newItems;
+                            });
+                            if (item.quantity && branchId && adjustmentType === AdjustmentType.Out) {
+                              checkStock(index, option.id, item.quantity);
+                            }
                           }}
                           placeholder="Search product..."
                           error={!!errors[`item_${index}_product`]}
@@ -448,7 +492,7 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                         )}
                       </div>
                       <div className="md:col-span-2">
-                        <input type="number" min="0" value={item.physical_stock} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                        <input type="number" min="0" value={item.physical_stock ?? 0} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
                           readOnly
                         />
 
@@ -467,7 +511,7 @@ const AdjustmentProductModal: React.FC<AdjustmentProductModalProps> = ({
                         )}
                       </div>
                       <div className="md:col-span-2">
-                        <input type="number" min="0" value={adjustmentType === AdjustmentType.In ? item.physical_stock + item.quantity : item.physical_stock - item.quantity} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
+                        <input type="number" min="0" value={adjustmentType === AdjustmentType.In ? (item.physical_stock ?? 0) + (item.quantity ?? 0) : (item.physical_stock ?? 0) - (item.quantity ?? 0)} className={`w-full px-2 py-1.5 bg-gray-100 border ${errors[`item_${index}_quantity`] || stockWarnings[index] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
                           readOnly
                         />
 
