@@ -115,8 +115,9 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
-    if (Number(val) > remainingBill) {
-      val = remainingBill.toString();
+    // Cap at paymentRemaining — deposit is handled server-side at approval time
+    if (paymentRemaining > 0 && Number(val) > paymentRemaining) {
+      val = paymentRemaining.toString();
     }
     setFormData(prev => ({ ...prev, amount: val }));
   };
@@ -268,7 +269,7 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
                     placeholder="0"
                     required
                     min="1"
-                    max={!record ? remainingBill : undefined}
+                    max={!record && paymentRemaining > 0 ? paymentRemaining : undefined}
                   />
                 </div>
                 {errors?.amount && <p className="text-red-500 text-xs mt-1 font-medium">{errors.amount[0]}</p>}
