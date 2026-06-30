@@ -177,7 +177,7 @@ export enum ApprovalStatus {
 export enum PaymentStatus {
   Unpaid = "unpaid",
   FullyPaid = "fully_paid",
-  PartialPayment = "partial_payment",
+  PartialPaid = "partially_paid",
 }
 
 export enum DeadlineStatus {
