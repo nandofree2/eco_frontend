@@ -8,16 +8,15 @@ import {
 } from 'lucide-react';
 import DeliveryOrderModal from './DeliveryOrderModal';
 import DeliveryOrderDetailModal from './DeliveryOrderDetailModal';
+import ApproveConfirmModal from '../../components/ApproveConfirmModal';
+
 
 const DeliveryOrder: React.FC = () => {
   const {
-    orders, branches, customers, loading, searchTerm, setSearchTerm,
-    branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
-    setDetailModalOpen, selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
-    actionLoading, serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus,
-    handleCreateOrUpdate, handleApprove, toggleSort, handlePageChange,
-    formatDate, formatCurrency, currentPage, perPage, approveLoading
+    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
+    sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, selectedOrder, setSelectedOrder, orderForDetail,
+    setOrderForDetail, actionLoading, serverErrors, setServerErrors, toasts, loadOrders, ApprovalStatus, handleCreateOrUpdate, handleApprove,
+    toggleSort, handlePageChange, formatDate, currentPage, perPage, approveLoading, isApproveModalOpen, setApproveModalOpen, confirmApprove
   } = useDeliveryOrder();
 
   return (
@@ -281,6 +280,14 @@ const DeliveryOrder: React.FC = () => {
         onApprove={handleApprove}
         approveLoading={approveLoading}
         onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
+      />
+      <ApproveConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setApproveModalOpen(false)}
+        onConfirm={confirmApprove}
+        title="Approve Delivery Order"
+        message="Are you sure you want to approve this delivery order? Once approved, it cannot be edited or deleted."
+        loading={approveLoading}
       />
     </div>
   );

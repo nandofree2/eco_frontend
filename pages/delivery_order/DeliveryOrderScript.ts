@@ -9,6 +9,7 @@ interface Toast {
 }
 
 export const useDeliveryOrder = () => {
+  const [approveLoading, setApproveLoading] = useState(false);
   const [orders, setOrders] = useState<DeliveryOrder[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -26,14 +27,13 @@ export const useDeliveryOrder = () => {
   // Modal States
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);
-  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<DeliveryOrder | null>(null);
   const [orderForDetail, setOrderForDetail] = useState<DeliveryOrder | null>(null);
-  const [orderToDelete, setOrderToDelete] = useState<DeliveryOrder | null>(null);
+  const [isApproveModalOpen, setApproveModalOpen] = useState(false);
+  const [deliveryOrderToApprove, setDeliveryOrderToApprove] = useState<string | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<Record<string, string[]> | null>(null);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -114,23 +114,6 @@ export const useDeliveryOrder = () => {
     }
   };
 
-  const confirmDelete = async () => {
-    if (!orderToDelete) return;
-    setDeleteLoading(true);
-    try {
-      await api.delivery_orders.delete(orderToDelete.id);
-      addToast('success', 'Delivery order removed.');
-      setDeleteModalOpen(false);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
-    } catch (err: any) {
-      const type = err.status === 422 ? 'warning' : 'error';
-      addToast(type, err.message || 'Delete failed.');
-    } finally {
-      setDeleteLoading(false);
-      setOrderToDelete(null);
-    }
-  };
-
   const toggleSort = (field: string) => {
     setSortBy(prev => {
       const [currField, currDir] = prev.split(' ');
@@ -153,38 +136,33 @@ export const useDeliveryOrder = () => {
     });
   };
 
-  const formatCurrency = (value?: number) => {
-    if (value == null || isNaN(value)) return 'Rp 0';
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+  const handleApprove = (id: string) => {
+    setDeliveryOrderToApprove(id);
+    setApproveModalOpen(true);
   };
 
-  const [approveLoading, setApproveLoading] = useState(false);
-
-  const handleApprove = async (id: string) => {
+  const confirmApprove = async () => {
+    if (!deliveryOrderToApprove) return;
     setApproveLoading(true);
     try {
-      await api.delivery_orders.approve(id);
+      await api.delivery_orders.approve(deliveryOrderToApprove);
       addToast('success', 'Delivery order approved successfully.');
-      if (orderForDetail) {
-        setOrderForDetail({ ...orderForDetail, approval_status: 'approved' as any });
-      }
+      setOrderForDetail(prev => prev && prev.id === deliveryOrderToApprove ? { ...prev, approval_status: ApprovalStatus.Approved } : prev);
+      setApproveModalOpen(false);
       loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
     } catch (err: any) {
-      addToast('error', err.message || 'Failed to approve delivery order.');
+      addToast('error', err.message || 'Failed to approve sales order.');
     } finally {
       setApproveLoading(false);
+      setDeliveryOrderToApprove(null);
     }
   };
 
   return {
-    orders, branches, customers, loading, searchTerm, setSearchTerm,
-    branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
-    isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
-    isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
-    orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
-    actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
-    toasts, ApprovalStatus, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove,
-    toggleSort, handlePageChange, formatDate, formatCurrency
+    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
+    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
+    selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail, actionLoading, approveLoading, serverErrors, setServerErrors,
+    toasts, ApprovalStatus, loadOrders, handleCreateOrUpdate, handleApprove, toggleSort, handlePageChange, formatDate, isApproveModalOpen,
+    confirmApprove
   };
 };

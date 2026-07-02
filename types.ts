@@ -226,6 +226,7 @@ export interface DeliveryOrderItem {
   product_id?: string;
   product_name?: string;
   sales_order_quantity?: number;
+  sales_order_item_stock?: number;
   quantity: number;
 }
 
@@ -264,6 +265,7 @@ export interface DeliveryOrder {
   sales_order_code?: string;
   description?: string;
   approval_status: ApprovalStatus;
+  invoiced_date?: Date;
   delivery_order_items: DeliveryOrderItem[];
   created_at: string;
   updated_at: string;

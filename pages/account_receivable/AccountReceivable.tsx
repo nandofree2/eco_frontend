@@ -9,15 +9,15 @@ import {
 } from 'lucide-react';
 import AccountReceivableModal from './AccountReceivableModal';
 import AccountReceivableDetailModal from './AccountReceivableDetailModal';
+import ApproveConfirmModal from '../../components/ApproveConfirmModal';
 
 const AccountReceivable: React.FC = () => {
   const {
-    accountReceivables, customers, loading, searchTerm, setSearchTerm,
-    customerFilter, setCustomerFilter, approvalFilter, setApprovalFilter,
-    sortBy, pagination, isModalOpen, setModalOpen, isDetailOpen, setDetailOpen,
-    selectedAR, setSelectedAR, toasts, loadData, deleteAR, approveAR, ability, ApprovalStatus,
-    toggleSort, handlePageChange, formatCurrency, currentPage, perPage,
-    createAR, updateAR, actionLoading, approveLoading, serverErrors
+    accountReceivables, loading, searchTerm, setSearchTerm, customerFilter, setCustomerFilter, approvalFilter,
+    setApprovalFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, selectedAR, setSelectedAR,
+    recordForDetail, setRecordForDetail, toasts, loadData, ability, ApprovalStatus, toggleSort, handlePageChange, formatCurrency,
+    currentPage, perPage, handleCreateOrUpdate, actionLoading, approveLoading, serverErrors, setServerErrors, handleApprove,
+    isApproveModalOpen, setApproveModalOpen, confirmApprove
   } = useAccountReceivable();
 
   return (
@@ -116,7 +116,7 @@ const AccountReceivable: React.FC = () => {
 
           {ability.can('create', 'AccountReceivable') && (
             <button
-              onClick={() => { setSelectedAR(null); setModalOpen(true); }}
+              onClick={() => { setSelectedAR(null); setServerErrors(null); setModalOpen(true); }}
               className="bg-eco-600 hover:bg-eco-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm"
             >
               <Plus className="w-5 h-5" /> Add
@@ -173,12 +173,12 @@ const AccountReceivable: React.FC = () => {
                 accountReceivables.map((ar) => (
                   <tr key={ar.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
-                  <span
-                    className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm cursor-pointer"
-                    onClick={() => { setSelectedAR(ar); setDetailOpen(true); }}
-                  >
-                    {ar.code || ar.id?.slice(0, 8)}
-                  </span>
+                      <span
+                        className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm cursor-pointer"
+                        onClick={() => { setRecordForDetail(ar); setDetailModalOpen(true); }}
+                      >
+                        {ar.code || ar.id?.slice(0, 8)}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
@@ -261,29 +261,33 @@ const AccountReceivable: React.FC = () => {
         )}
       </div>
 
-      {isDetailOpen && (
-        <AccountReceivableDetailModal
-          isOpen={isDetailOpen}
-          onClose={() => setDetailOpen(false)}
-          record={selectedAR}
-          onEdit={() => { setDetailOpen(false); setModalOpen(true); }}
-          onApprove={approveAR}
-          approveLoading={approveLoading}
-          canEdit={ability.can('update', 'AccountReceivable')}
-          canApprove={ability.can('update', 'AccountReceivable')}
-        />
-      )}
+      <AccountReceivableModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={handleCreateOrUpdate}
+        record={selectedAR}
+        loading={actionLoading}
+        errors={serverErrors}
+      />
 
-      {isModalOpen && (
-        <AccountReceivableModal
-          isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
-          record={selectedAR}
-          onSave={selectedAR ? (data) => updateAR(selectedAR.id, data) : createAR}
-          loading={actionLoading}
-          errors={serverErrors}
-        />
-      )}
+      <AccountReceivableDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setDetailModalOpen(false)}
+        record={recordForDetail}
+        onApprove={handleApprove}
+        approveLoading={approveLoading}
+        onEdit={() => { setSelectedAR(recordForDetail); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
+        canEdit={ability.can('update', 'AccountReceivable')}
+        canApprove={ability.can('approve', 'AccountReceivable')}
+      />
+      <ApproveConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setApproveModalOpen(false)}
+        onConfirm={confirmApprove}
+        title="Approve Account Receivable"
+        message="Are you sure you want to approve this account receivable? Once approved, it cannot be edited or deleted."
+        loading={approveLoading}
+      />
     </div>
   );
 };
