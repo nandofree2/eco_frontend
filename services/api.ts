@@ -695,14 +695,14 @@ export const api = {
     },
   },
   invoices: {
-    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerId?: string, deadlineStatus?: string, paymentStatus?: string): Promise<PaginatedResponse<Invoice>> => {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerName?: string, deadlineStatus?: string, paymentStatus?: string): Promise<PaginatedResponse<Invoice>> => {
       const deadlineMap: Record<string, string> = { normal: '0', overdue: '1', closed: '2' };
-      const paymentMap: Record<string, string> = { unpaid: '0', partial_payment: '1', fully_paid: '2' };
+      const paymentMap: Record<string, string> = { unpaid: '0', partially_paid: '1', fully_paid: '2' };
 
       const params = new URLSearchParams();
       if (query) params.append('q[code_or_delivery_order_sales_order_code_or_delivery_order_code_or_delivery_order_delivery_order_items_sales_order_item_product_name_cont]', query);
       if (branchId) params.append('q[branch_id_eq]', branchId);
-      if (customerId) params.append('q[delivery_order_sales_order_customer_id_eq]', customerId);
+      if (customerName) params.append('q[delivery_order_sales_order_customer_name_cont]', customerName);
       if (deadlineStatus && deadlineMap[deadlineStatus] !== undefined) params.append('q[deadline_status_eq]', deadlineMap[deadlineStatus]);
       if (paymentStatus && paymentMap[paymentStatus] !== undefined) params.append('q[payment_status_eq]', paymentMap[paymentStatus]);
       if (sort) params.append('q[s]', sort);

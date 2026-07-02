@@ -34,9 +34,9 @@ const AccountReceivableDetailModal: React.FC<AccountReceivableDetailModalProps> 
   const isRejected = record.approval_status === 'rejected';
 
   const statusConfig = {
-    draft:    { label: 'Draft',    icon: Clock,         bg: 'bg-amber-50',  border: 'border-amber-200',  text: 'text-amber-700',  dot: 'bg-amber-400'  },
-    approved: { label: 'Approved', icon: CheckCircle2,  bg: 'bg-green-50',  border: 'border-green-200',  text: 'text-green-700',  dot: 'bg-green-400'  },
-    rejected: { label: 'Rejected', icon: XCircle,       bg: 'bg-red-50',    border: 'border-red-200',    text: 'text-red-700',    dot: 'bg-red-400'    },
+    draft: { label: 'Draft', icon: Clock, bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', dot: 'bg-amber-400' },
+    approved: { label: 'Approved', icon: CheckCircle2, bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-700', dot: 'bg-green-400' },
+    rejected: { label: 'Rejected', icon: XCircle, bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', dot: 'bg-red-400' },
   };
   const status = statusConfig[record.approval_status as keyof typeof statusConfig] || statusConfig.draft;
   const StatusIcon = status.icon;
@@ -193,14 +193,6 @@ const AccountReceivableDetailModal: React.FC<AccountReceivableDetailModalProps> 
 
         {/* Footer */}
         <div className="bg-gray-50 px-5 py-3 flex items-center justify-between border-t border-gray-100 shrink-0 gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 text-xs font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 rounded-lg transition-colors"
-          >
-            Close
-          </button>
-
           <div className="flex items-center gap-2">
             {/* Edit button — only when draft */}
             {canEdit && isDraft && (

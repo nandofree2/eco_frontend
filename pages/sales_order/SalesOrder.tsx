@@ -2,13 +2,13 @@ import React from 'react';
 import { useSalesOrder } from './SalesOrderScript';
 import SEO from '../../components/SEO';
 import {
-  Plus, Search, Edit2, Trash2, ShoppingCart,
-  ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
+  Plus, Search, Edit2, Trash2, ShoppingCart, ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
   ChevronLeft, ChevronRight, Filter, Building2, Users, X, AlertTriangle
 } from 'lucide-react';
 import SalesOrderModal from './SalesOrderModal';
 import SalesOrderDetailModal from './SalesOrderDetailModal';
 import ApproveConfirmModal from '../../components/ApproveConfirmModal';
+
 const SalesOrder: React.FC = () => {
   const {
     orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, customerFilter,

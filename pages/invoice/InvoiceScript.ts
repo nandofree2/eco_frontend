@@ -50,9 +50,11 @@ export const useInvoice = () => {
     setLoading(true);
     try {
       const response = await api.invoices.list(search, sort, page, perPage, branch, customer, deadline, payment);
-      setOrders(response.data);
-      setPagination(response.meta);
+      setOrders(response.data || []);
+      setPagination(response.meta || null);
     } catch (err: any) {
+      setOrders([]);
+      setPagination(null);
       addToast('error', err.message || 'Failed to load invoices.');
     } finally {
       setLoading(false);
@@ -102,7 +104,7 @@ export const useInvoice = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
-    loadOrders(searchTerm, sortBy, page);
+    loadOrders(searchTerm, sortBy, page, branchFilter, customerFilter, deadlineFilter, paymentFilter);
   };
 
   const formatDate = (dateString?: string) => {

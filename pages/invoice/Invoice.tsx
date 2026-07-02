@@ -111,7 +111,7 @@ const Invoice: React.FC = () => {
             >
               <option value="">All Customers</option>
               {customers.map(c => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.name}>{c.name}</option>
               ))}
             </select>
             {customerFilter && (
@@ -158,7 +158,7 @@ const Invoice: React.FC = () => {
               <option value="">All Payments</option>
               <option value="unpaid">Unpaid</option>
               <option value="fully_paid">Fully Paid</option>
-              <option value="partial_payment">Partial Payment</option>
+              <option value="partially_paid">Partial Paid</option>
             </select>
             {paymentFilter && (
               <button onClick={() => setPaymentFilter('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Filter">
