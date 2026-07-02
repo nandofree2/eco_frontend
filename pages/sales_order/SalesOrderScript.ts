@@ -9,6 +9,7 @@ interface Toast {
 }
 
 export const useSalesOrder = () => {
+  const [approveLoading, setApproveLoading] = useState(false);
   const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -30,6 +31,8 @@ export const useSalesOrder = () => {
   const [selectedOrder, setSelectedOrder] = useState<SalesOrder | null>(null);
   const [orderForDetail, setOrderForDetail] = useState<SalesOrder | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<SalesOrder | null>(null);
+  const [isApproveModalOpen, setApproveModalOpen] = useState(false);
+  const [salesOrderToApprove, setSalesOrderToApprove] = useState<string | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
@@ -116,23 +119,6 @@ export const useSalesOrder = () => {
     }
   };
 
-  const confirmDelete = async () => {
-    if (!orderToDelete) return;
-    setDeleteLoading(true);
-    try {
-      await api.sales_orders.delete(orderToDelete.id);
-      addToast('success', 'Sales order removed.');
-      setDeleteModalOpen(false);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter);
-    } catch (err: any) {
-      const type = err.status === 422 ? 'warning' : 'error';
-      addToast(type, err.message || 'Delete failed.');
-    } finally {
-      setDeleteLoading(false);
-      setOrderToDelete(null);
-    }
-  };
-
   const toggleSort = (field: string) => {
     setSortBy(prev => {
       const [currField, currDir] = prev.split(' ');
@@ -160,33 +146,34 @@ export const useSalesOrder = () => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
   };
 
-  const [approveLoading, setApproveLoading] = useState(false);
+  const handleApprove = (id: string) => {
+    setSalesOrderToApprove(id);
+    setApproveModalOpen(true);
+  };
 
-  const handleApprove = async (id: string) => {
+  const confirmApprove = async () => {
+    if (!salesOrderToApprove) return;
     setApproveLoading(true);
     try {
-      await api.sales_orders.approve(id);
+      await api.sales_orders.approve(salesOrderToApprove);
       addToast('success', 'Sales order approved successfully.');
-      if (orderForDetail) {
-        setOrderForDetail({ ...orderForDetail, approval_status: 'approved' as any });
-      }
+      setOrderForDetail(prev => prev && prev.id === salesOrderToApprove ? { ...prev, approval_status: ApprovalStatus.Approved } : prev);
+      setApproveModalOpen(false);
       loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter);
     } catch (err: any) {
       addToast('error', err.message || 'Failed to approve sales order.');
     } finally {
       setApproveLoading(false);
+      setSalesOrderToApprove(null);
     }
   };
 
   return {
-    orders, branches, customers, loading, searchTerm, setSearchTerm,
-    branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
-    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
-    isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
-    isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
-    orderForDetail, setOrderForDetail, orderToDelete, setOrderToDelete,
-    actionLoading, deleteLoading, approveLoading, serverErrors, setServerErrors,
-    toasts, loadOrders, handleCreateOrUpdate, confirmDelete, handleApprove, PaymentStatus,
-    toggleSort, handlePageChange, formatDate, formatCurrency, ApprovalStatus, ProgressStatus
+    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
+    sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
+    isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail, orderToDelete,
+    setApproveModalOpen, actionLoading, approveLoading, serverErrors, setServerErrors, toasts, loadOrders, handleCreateOrUpdate,
+    handleApprove, PaymentStatus, toggleSort, handlePageChange, formatDate, formatCurrency, ApprovalStatus, ProgressStatus,
+    isApproveModalOpen, confirmApprove,
   };
 };

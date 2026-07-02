@@ -8,16 +8,15 @@ import {
 } from 'lucide-react';
 import SalesOrderModal from './SalesOrderModal';
 import SalesOrderDetailModal from './SalesOrderDetailModal';
-import DeleteConfirmModal from '../../components/DeleteConfirmModal';
-
+import ApproveConfirmModal from '../../components/ApproveConfirmModal';
 const SalesOrder: React.FC = () => {
   const {
-    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter,
-    customerFilter, setCustomerFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
-    setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder, orderForDetail,
-    setOrderForDetail, orderToDelete, setOrderToDelete, actionLoading, deleteLoading, PaymentStatus, serverErrors,
-    setServerErrors, toasts, loadOrders, ApprovalStatus, ProgressStatus, handleCreateOrUpdate, confirmDelete,
-    handleApprove, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage, approveLoading
+    orders, branches, customers, loading, searchTerm, setSearchTerm, branchFilter, setBranchFilter, customerFilter,
+    setCustomerFilter, sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, selectedOrder,
+    setSelectedOrder, orderForDetail, setOrderForDetail, actionLoading, PaymentStatus, serverErrors,
+    setServerErrors, toasts, loadOrders, ApprovalStatus, ProgressStatus, handleCreateOrUpdate,
+    handleApprove, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage, approveLoading,
+    isApproveModalOpen, setApproveModalOpen, confirmApprove
   } = useSalesOrder();
 
   return (
@@ -297,14 +296,13 @@ const SalesOrder: React.FC = () => {
         approveLoading={approveLoading}
         onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
       />
-
-      <DeleteConfirmModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setDeleteModalOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Sales Order"
-        message="Are you sure you want to remove this sales order? This action cannot be undone."
-        loading={deleteLoading}
+      <ApproveConfirmModal
+        isOpen={isApproveModalOpen}
+        onClose={() => setApproveModalOpen(false)}
+        onConfirm={confirmApprove}
+        title="Approve Sales Order"
+        message="Are you sure you want to approve this sales order? Once approved, it cannot be edited or deleted."
+        loading={approveLoading}
       />
     </div>
   );
