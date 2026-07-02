@@ -215,6 +215,7 @@ export interface SalesOrderItem {
   total_price: number;
   code?: string;
   amount: number;
+  delivered_quantity: number;
   payment_type: PaymentType;
   payment_date: string;
 }
@@ -247,6 +248,7 @@ export interface SalesOrder {
   payment_status: PaymentStatus;
   sales_order_items: SalesOrderItem[];
   sales_order_date: string;
+  payment_deadline: string;
   created_at: string;
   updated_at: string;
 }
