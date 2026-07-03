@@ -228,6 +228,7 @@ export interface DeliveryOrderItem {
   sales_order_quantity?: number;
   sales_order_item_stock?: number;
   quantity: number;
+  total_price: number;
 }
 
 export interface SalesOrder {
@@ -285,7 +286,12 @@ export interface Invoice {
   delivery_order_id?: string;
   delivery_order_code?: string;
   payment_status: PaymentStatus;
+  invoiced_date: Date;
+  description?: string;
+  payment_deadline: Date;
   deadline_status: DeadlineStatus;
+  delivery_order_items: DeliveryOrderItem[];
+  account_receivables?: AccountReceivable[];
   payment_bill?: number;
   shipping_price?: number;
   created_at: string;

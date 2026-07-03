@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useInvoice } from './InvoiceScript';
-import { formatDateOnly } from '../../services/helper';
+import { formatDateOnly, formatYmdToDmy, parseDmyToYmd, formatDateInput } from '../../services/helper';
 import SEO from '../../components/SEO';
+import SearchableFilterDropdown from '../../components/SearchableFilterDropdown';
 import {
   Plus, Search, Edit2, Trash2, ShoppingCart,
   ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
@@ -15,11 +16,61 @@ const Invoice: React.FC = () => {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
     deadlineFilter, setDeadlineFilter, paymentFilter, setPaymentFilter,
+    invoicedDateFrom, setInvoicedDateFrom, invoicedDateTo, setInvoicedDateTo,
     sortBy, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
     setDetailModalOpen, selectedOrder, setSelectedOrder, orderForDetail, setOrderForDetail,
     actionLoading, serverErrors, setServerErrors, toasts, loadOrders, PaymentStatus, DeadlineStatus,
     toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
   } = useInvoice();
+
+  const [invoicedDateFromInput, setInvoicedDateFromInput] = useState('');
+  const [invoicedDateToInput, setInvoicedDateToInput] = useState('');
+  const dateFromPickerRef = useRef<HTMLInputElement>(null);
+  const dateToPickerRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setInvoicedDateFromInput(formatYmdToDmy(invoicedDateFrom));
+  }, [invoicedDateFrom]);
+
+  useEffect(() => {
+    setInvoicedDateToInput(formatYmdToDmy(invoicedDateTo));
+  }, [invoicedDateTo]);
+
+  const handleInvoicedDateFromInputChange = (val: string) => {
+    const formatted = formatDateInput(val, invoicedDateFromInput);
+    setInvoicedDateFromInput(formatted);
+
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      setInvoicedDateFrom(ymd);
+    } else {
+      setInvoicedDateFrom('');
+    }
+  };
+
+  const handleInvoicedDateToInputChange = (val: string) => {
+    const formatted = formatDateInput(val, invoicedDateToInput);
+    setInvoicedDateToInput(formatted);
+
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      setInvoicedDateTo(ymd);
+    } else {
+      setInvoicedDateTo('');
+    }
+  };
+
+  const handleInvoicedDateFromPickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setInvoicedDateFrom(ymd);
+    setInvoicedDateFromInput(formatYmdToDmy(ymd));
+  };
+
+  const handleInvoicedDateToPickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setInvoicedDateTo(ymd);
+    setInvoicedDateToInput(formatYmdToDmy(ymd));
+  };
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
@@ -54,7 +105,7 @@ const Invoice: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter, deadlineFilter, paymentFilter)}
+            onClick={() => loadOrders(searchTerm, sortBy, currentPage, branchFilter, customerFilter, deadlineFilter, paymentFilter, invoicedDateFrom, invoicedDateTo)}
             className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm"
             title="Refresh Table"
           >
@@ -102,26 +153,86 @@ const Invoice: React.FC = () => {
           </div>
 
           {/* Customer Filter */}
-          <div className="relative group">
-            <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors pointer-events-none" />
-            <select
-              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-44 text-sm shadow-sm appearance-none font-bold text-gray-700"
+          <div className="w-full md:w-44">
+            <SearchableFilterDropdown
               value={customerFilter}
-              onChange={(e) => setCustomerFilter(e.target.value)}
+              onChange={(id, name) => setCustomerFilter(name || '')}
+              onSearch={async (query) => {
+                const normalized = query.trim().toLowerCase();
+                return customers
+                  .filter(c => c.name.toLowerCase().includes(normalized))
+                  .map(c => ({ id: c.id, name: c.name }));
+              }}
+              placeholder="Search customer..."
+              initialName={customerFilter}
+              compact
+            />
+          </div>
+
+          <div className="relative group w-full md:w-44">
+            <button 
+              type="button" 
+              onClick={() => dateFromPickerRef.current?.showPicker?.()} 
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-eco-600 transition-colors z-10"
             >
-              <option value="">All Customers</option>
-              {customers.map(c => (
-                <option key={c.id} value={c.name}>{c.name}</option>
-              ))}
-            </select>
-            {customerFilter && (
-              <button onClick={() => setCustomerFilter('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Filter">
+              <Calendar className="w-4 h-4" />
+            </button>
+            <input
+              type="text"
+              placeholder="From Date"
+              className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full text-sm shadow-sm"
+              value={invoicedDateFromInput}
+              onChange={(e) => handleInvoicedDateFromInputChange(e.target.value)}
+            />
+            {invoicedDateFromInput && (
+              <button 
+                onClick={() => { setInvoicedDateFrom(''); setInvoicedDateFromInput(''); }} 
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" 
+                title="Clear From Date"
+              >
                 <X className="w-4 h-4" />
               </button>
             )}
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:hidden">
-              <Filter className="w-3.5 h-3.5" />
-            </div>
+            <input
+              type="date"
+              ref={dateFromPickerRef}
+              value={invoicedDateFrom}
+              onChange={(e) => handleInvoicedDateFromPickerChange(e.target.value)}
+              className="sr-only"
+            />
+          </div>
+
+          <div className="relative group w-full md:w-44">
+            <button 
+              type="button" 
+              onClick={() => dateToPickerRef.current?.showPicker?.()} 
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-eco-600 transition-colors z-10"
+            >
+              <Calendar className="w-4 h-4" />
+            </button>
+            <input
+              type="text"
+              placeholder="To Date"
+              className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full text-sm shadow-sm"
+              value={invoicedDateToInput}
+              onChange={(e) => handleInvoicedDateToInputChange(e.target.value)}
+            />
+            {invoicedDateToInput && (
+              <button 
+                onClick={() => { setInvoicedDateTo(''); setInvoicedDateToInput(''); }} 
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" 
+                title="Clear To Date"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+            <input
+              type="date"
+              ref={dateToPickerRef}
+              value={invoicedDateTo}
+              onChange={(e) => handleInvoicedDateToPickerChange(e.target.value)}
+              className="sr-only"
+            />
           </div>
 
           {/* Deadline Filter */}
@@ -192,15 +303,38 @@ const Invoice: React.FC = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50/50">
               <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('code')}>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('code')}>
                   <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Sales Order SKU</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Branch</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Customer</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Deadline</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Deadline Status</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-center">Payment Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('delivery_order_sales_order_code')}>
+                  <div className="flex items-center gap-2">SO SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('branch_name')} >
+                  <div className="flex items-center gap-2">Branch <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('delivery_order_sales_order_customer_name')} >
+                 <div className="flex items-center gap-2">Customer <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('delivery_order_invoiced_date')} >
+                 <div className="flex items-center gap-2">INV Date <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('payment_deadline')}>
+                  <div className="flex items-center gap-2">Deadline <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('deadline_status')}>
+                  <div className="flex items-center gap-2">Deadline Status <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
+                 onClick={() => toggleSort('payment_status')}>
+                  <div className="flex items-center gap-2">Payment Status <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -246,19 +380,24 @@ const Invoice: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+                        {formatDateOnly(order.invoiced_date) || '---'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                         {formatDateOnly(order.payment_deadline)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.deadline_status === DeadlineStatus.Overdue ? 'bg-red-50 text-red-700 border-red-100' :
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.deadline_status === DeadlineStatus.Overdue ? 'bg-red-50 text-red-700 border-red-100' :
                         order.deadline_status === DeadlineStatus.Closed ? 'bg-green-50 text-green-700 border-green-100' :
                           'bg-blue-50 text-blue-700 border-blue-100'
                         }`}>
                         {order.deadline_status?.toUpperCase() || 'NORMAL'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.payment_status === PaymentStatus.FullyPaid ? 'bg-green-50 text-green-700 border-green-100' :
+                    <td className="px-6 py-4 ">
+                      <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-bold uppercase border ${order.payment_status === PaymentStatus.FullyPaid ? 'bg-green-50 text-green-700 border-green-100' :
                         order.payment_status === PaymentStatus.PartialPaid ? 'bg-yellow-50 text-yellow-700 border-yellow-100' :
                           'bg-red-100 text-red-700 border-red-200'
                         }`}>
@@ -314,12 +453,10 @@ const Invoice: React.FC = () => {
         )}
       </div>
 
-
       <InvoiceDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         order={orderForDetail}
-        onEdit={(order) => { setSelectedOrder(order); setServerErrors(null); setDetailModalOpen(false); setModalOpen(true); }}
       />
     </div>
   );

@@ -18,6 +18,8 @@ export const useInvoice = () => {
   const [customerFilter, setCustomerFilter] = useState<string>('');
   const [deadlineFilter, setDeadlineFilter] = useState<string>('');
   const [paymentFilter, setPaymentFilter] = useState<string>('');
+  const [invoicedDateFrom, setInvoicedDateFrom] = useState<string>('');
+  const [invoicedDateTo, setInvoicedDateTo] = useState<string>('');
   const [sortBy, setSortBy] = useState('created_at desc');
 
   // Pagination
@@ -46,11 +48,14 @@ export const useInvoice = () => {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
   }, []);
 
-  const loadOrders = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, branch = branchFilter, customer = customerFilter, deadline = deadlineFilter, payment = paymentFilter) => {
+  const loadOrders = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, branch = branchFilter, customer = customerFilter, deadline = deadlineFilter, payment = paymentFilter, dateFrom = invoicedDateFrom, dateTo = invoicedDateTo) => {
     setLoading(true);
     try {
-      const response = await api.invoices.list(search, sort, page, perPage, branch, customer, deadline, payment);
-      setOrders(response.data || []);
+      const response = await api.invoices.list(search, sort, page, perPage, branch, customer, deadline, payment, dateFrom, dateTo);
+      const invoices = response.data || [];
+      const uniqueInvoices = invoices.filter((invoice, index) => invoices.findIndex(i => i.id === invoice.id) === index);
+
+      setOrders(uniqueInvoices);
       setPagination(response.meta || null);
     } catch (err: any) {
       setOrders([]);
@@ -59,7 +64,7 @@ export const useInvoice = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, sortBy, currentPage, perPage, branchFilter, customerFilter, deadlineFilter, paymentFilter, addToast]);
+  }, [searchTerm, sortBy, currentPage, perPage, branchFilter, customerFilter, deadlineFilter, paymentFilter, invoicedDateFrom, invoicedDateTo, addToast]);
 
   const loadBranches = useCallback(async () => {
     try {
@@ -88,10 +93,10 @@ export const useInvoice = () => {
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       setCurrentPage(1);
-      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter, deadlineFilter, paymentFilter);
+      loadOrders(searchTerm, sortBy, 1, branchFilter, customerFilter, deadlineFilter, paymentFilter, invoicedDateFrom, invoicedDateTo);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, sortBy, branchFilter, customerFilter, deadlineFilter, paymentFilter]);
+  }, [searchTerm, sortBy, branchFilter, customerFilter, deadlineFilter, paymentFilter, invoicedDateFrom, invoicedDateTo]);
 
   const toggleSort = (field: string) => {
     setSortBy(prev => {
@@ -104,7 +109,7 @@ export const useInvoice = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
-    loadOrders(searchTerm, sortBy, page, branchFilter, customerFilter, deadlineFilter, paymentFilter);
+    loadOrders(searchTerm, sortBy, page, branchFilter, customerFilter, deadlineFilter, paymentFilter, invoicedDateFrom, invoicedDateTo);
   };
 
   const formatDate = (dateString?: string) => {
@@ -124,6 +129,7 @@ export const useInvoice = () => {
     orders, branches, customers, loading, searchTerm, setSearchTerm,
     branchFilter, setBranchFilter, customerFilter, setCustomerFilter,
     deadlineFilter, setDeadlineFilter, paymentFilter, setPaymentFilter,
+    invoicedDateFrom, setInvoicedDateFrom, invoicedDateTo, setInvoicedDateTo,
     sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
     isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen,
     isDeleteModalOpen, setDeleteModalOpen, selectedOrder, setSelectedOrder,
