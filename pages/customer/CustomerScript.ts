@@ -120,12 +120,12 @@ export const useCustomer = () => {
     setDepositModalOpen(true);
   };
 
-  const confirmDeposit = async (amount: number) => {
+  const confirmDeposit = async (amount: number, payment_type: string, deposit_type: string, description: string, deposit_date: string) => {
     if (!selectedCustomer) return;
     setDepositLoading(true);
     try {
-      await api.customers.deposit(selectedCustomer.id, amount);
-      addToast('success', `Deposit of Rp ${amount.toLocaleString('id-ID')} added to "${selectedCustomer.name}".`);
+      await api.deposits.create({ customer_id: selectedCustomer.id, amount, payment_type, deposit_type, description, deposit_date });
+      addToast('success', `Transaction to "${selectedCustomer.name}" Success.`);
       setDepositModalOpen(false);
       loadCustomers(searchTerm, sortBy, 1);
     } catch (err: any) {
@@ -142,40 +142,9 @@ export const useCustomer = () => {
   };
 
   return {
-    customers,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    sortBy,
-    setSortBy,
-    currentPage,
-    setCurrentPage,
-    perPage,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    isDepositModalOpen,
-    setDepositModalOpen,
-    selectedCustomer,
-    setSelectedCustomer,
-    customerToDelete,
-    setCustomerToDelete,
-    actionLoading,
-    deleteLoading,
-    depositLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadCustomers,
-    handleCreateOrUpdate,
-    confirmDelete,
-    handleDeposit,
-    confirmDeposit,
-    toggleSort,
-    handlePageChange
+    customers, loading, searchTerm, setSearchTerm, sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen,
+    setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, isDepositModalOpen, setDepositModalOpen,
+    selectedCustomer, setSelectedCustomer, customerToDelete, setCustomerToDelete, actionLoading, deleteLoading, depositLoading, serverErrors,
+    setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, confirmDelete, handleDeposit, confirmDeposit, toggleSort, handlePageChange
   };
 };
