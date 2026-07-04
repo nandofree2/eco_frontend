@@ -32,6 +32,7 @@ export interface Customer {
   payable?: number;
   ordered_amount?: number;
   deposit?: number;
+  deposit_type?: DepositType;
   created_at: string;
   updated_at?: string;
 }
@@ -160,6 +161,11 @@ export interface StockProduct {
 export enum AdjustmentType {
   In = "in",
   Out = "out",
+}
+
+export enum DepositType {
+  Topup = "topup",
+  Refund = "refund",
 }
 
 export enum ProgressStatus {
@@ -301,6 +307,19 @@ export interface Invoice {
 export enum PaymentType {
   Cash = "cash",
   Transfer = "transfer",
+}
+
+export interface Deposit {
+  id: string;
+  code?: string;
+  amount: number;
+  payment_type: PaymentType;
+  deposit_type: DepositType;
+  customer_name?: string;
+  description?: string;
+  deposit_date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AccountReceivable {

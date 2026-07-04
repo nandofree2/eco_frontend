@@ -1,4 +1,4 @@
-import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder, Invoice, AccountReceivable } from '../types';
+import { User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder, Invoice, AccountReceivable, Deposit } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
 const NGROK_SKIP_VAL = process.env.NGROK_SKIP_HEADER;
@@ -748,6 +748,25 @@ export const api = {
     },
     approve: async (id: string) => {
       const json = await request(`/account_receivables/${id}/approve`, { method: 'POST' });
+      return mapAttributes(json.data || json);
+    },
+  },
+  deposits: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<Deposit>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[code_or_invoice_code_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/deposits?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<Deposit> => {
+      const json = await request(`/deposits/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<Deposit>) => {
+      const json = await request('/deposits', { method: 'POST', body: JSON.stringify({ deposit: data }) });
       return mapAttributes(json.data || json);
     },
   },

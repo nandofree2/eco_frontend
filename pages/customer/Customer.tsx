@@ -8,11 +8,12 @@ import {
 import CustomerModal from './CustomerModal';
 import CustomerDetailModal from './CustomerDetailModal';
 import CustomerDepositModal from './CustomerDepositModal';
-import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useCustomer } from './CustomerScript';
 
 const Customer: React.FC = () => {
-  const { customers, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDepositModalOpen, setDepositModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedCustomer, setSelectedCustomer, customerToDelete, setCustomerToDelete, actionLoading, deleteLoading, depositLoading, serverErrors, setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, confirmDelete, handleDeposit, confirmDeposit, toggleSort, handlePageChange
+  const { customers, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, isDepositModalOpen, setDepositModalOpen, selectedCustomer, setSelectedCustomer, actionLoading, depositLoading,
+    serverErrors, setServerErrors, toasts, loadCustomers, handleCreateOrUpdate, handleDeposit, confirmDeposit, toggleSort, handlePageChange
   } = useCustomer();
 
   const getMembershipBadge = (membership?: number) => {
@@ -51,7 +52,6 @@ const Customer: React.FC = () => {
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
             <Users className="w-7 h-7 text-eco-600" /> Customers
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage customer profiles and loyalty tiers.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -252,7 +252,6 @@ const Customer: React.FC = () => {
         onConfirm={confirmDeposit}
         loading={depositLoading}
       />
-      <DeleteConfirmModal isOpen={isDeleteModalOpen} onClose={() => setDeleteModalOpen(false)} onConfirm={confirmDelete} title="Confirm Revocation" message={`Are you sure you want to remove the record for "${customerToDelete?.name}"? All membership history will be archived.`} loading={deleteLoading} />
     </div>
   );
 };
