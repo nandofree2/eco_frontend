@@ -322,6 +322,19 @@ export interface Deposit {
   updated_at: string;
 }
 
+export interface FinancialTransaction {
+  id: string;
+  code?: string;
+  transaction_date: string;
+  transaction_category: string;
+  party_name: string;
+  party_class: string;
+  source_name: string;
+  debit: number;
+  credit: number;
+  description: string;
+}
+
 export interface AccountReceivable {
   id: string;
   code?: string;

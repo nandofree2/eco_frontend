@@ -68,12 +68,6 @@ const CustomerDepositModal: React.FC<CustomerDepositModalProps> = ({
   };
 
   const handleConfirm = async () => {
-    console.log("Amount: ", numericAmount);
-    console.log("Customer: ", customer.name);
-    console.log("Payment Type: ", paymentType);
-    console.log("Deposit Type: ", depositType);
-    console.log("Description: ", description);
-    console.log("Deposit Date: ", depositDate);
     await onConfirm(numericAmount, paymentType, depositType, description, depositDate);
     setShowConfirm(false);
   };
