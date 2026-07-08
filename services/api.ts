@@ -699,7 +699,8 @@ export const api = {
     },
   },
   invoices: {
-    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerName?: string, deadlineStatus?: string, paymentStatus?: string, invoicedDateFrom?: string, invoicedDateTo?: string): Promise<PaginatedResponse<Invoice>> => {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, branchId?: string, customerName?: string,
+      deadlineStatus?: string, paymentStatus?: string, invoicedDateFrom?: string, invoicedDateTo?: string): Promise<PaginatedResponse<Invoice>> => {
       const deadlineMap: Record<string, string> = { normal: '0', overdue: '1', closed: '2' };
       const paymentMap: Record<string, string> = { unpaid: '0', partially_paid: '1', fully_paid: '2' };
 
@@ -775,10 +776,13 @@ export const api = {
     },
   },
   financial_transactions: {
-    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<FinancialTransaction>> => {
+    list: async (query?: string, contact_name?: string, sort?: string, page: number = 1, perPage: number = 10, transactionDateFrom?: string, transactionDateTo?: string): Promise<PaginatedResponse<FinancialTransaction>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[code_or_invoice_code_cont]', query);
+      if (query) params.append('q[code_or_description_cont]', query);
+      if (contact_name) params.append('q[contact_name_cont]', contact_name);
       if (sort) params.append('q[s]', sort);
+      if (transactionDateFrom) params.append('q[transaction_date_gteq]', transactionDateFrom);
+      if (transactionDateTo) params.append('q[transaction_date_lteq]', transactionDateTo);
       params.append('page', page.toString());
       params.append('per_page', perPage.toString());
       const json = await request(`/financial_transactions?${params.toString()}`);

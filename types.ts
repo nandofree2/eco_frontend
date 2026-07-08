@@ -325,10 +325,11 @@ export interface Deposit {
 export interface FinancialTransaction {
   id: string;
   code?: string;
+  name?: string;
   transaction_date: string;
   transaction_category: string;
-  party_name: string;
-  party_class: string;
+  contact_name: string;
+  contact_class: string;
   source_name: string;
   debit: number;
   credit: number;

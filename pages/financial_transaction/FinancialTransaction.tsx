@@ -12,7 +12,7 @@ import {
 
 const FinancialTransaction: React.FC = () => {
   const {
-    transactions, customers, loading, searchTerm, setSearchTerm, customerFilter, setCustomerFilter, transactionDateFrom,
+    transactions, customers, loading, searchTerm, setSearchTerm, contactTerm, setContactTerm, transactionDateFrom,
     setTransactionDateFrom, transactionDateTo, setTransactionDateTo, sortBy, pagination, isModalOpen, setModalOpen, selectedTransaction,
     setSelectedTransaction, transactionForDetail, setTransactionForDetail, actionLoading, serverErrors, setServerErrors, toasts,
     loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
@@ -99,47 +99,12 @@ const FinancialTransaction: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => loadTransactions(searchTerm, sortBy, currentPage, customerFilter, transactionDateFrom, transactionDateTo)}
+            onClick={() => loadTransactions(searchTerm, contactTerm, sortBy, currentPage, transactionDateFrom, transactionDateTo)}
             className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm"
             title="Refresh Table"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
-
-          {/* Search */}
-          <div className="relative group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
-            <input
-              type="text"
-              placeholder="Search by Invoice, SO, or DO code..."
-              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-64 shadow-sm text-sm"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            {searchTerm && (
-              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Search">
-                <XCircle className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Customer Filter */}
-          <div className="w-full md:w-44">
-            <SearchableFilterDropdown
-              value={customerFilter}
-              onChange={(id, name) => setCustomerFilter(name || '')}
-              onSearch={async (query) => {
-                const normalized = query.trim().toLowerCase();
-                return customers
-                  .filter(c => c.name.toLowerCase().includes(normalized))
-                  .map(c => ({ id: c.id, name: c.name }));
-              }}
-              placeholder="Search customer..."
-              initialName={customerFilter}
-              compact
-            />
-          </div>
-
           <div className="relative group w-full md:w-44">
             <button
               type="button"
@@ -206,6 +171,42 @@ const FinancialTransaction: React.FC = () => {
             />
           </div>
 
+          {/* Search */}
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by SKU, description..."
+              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-64 shadow-sm text-sm"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Search">
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by Contact name..."
+              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-64 shadow-sm text-sm"
+              value={contactTerm}
+              onChange={(e) => setContactTerm(e.target.value)}
+            />
+            {contactTerm && (
+              <button onClick={() => setContactTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Search">
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+
+
+
         </div>
       </div>
 
@@ -232,15 +233,15 @@ const FinancialTransaction: React.FC = () => {
                   <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('code')}>
+                  onClick={() => toggleSort('contact_name')}>
                   <div className="flex items-center gap-2">Contact <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('code')}>
+                  onClick={() => toggleSort('sourceable_type')}>
                   <div className="flex items-center gap-2">Source <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('delivery_order_sales_order_code')}>
+                  onClick={() => toggleSort('transaction_date')}>
                   <div className="flex items-center gap-2">Transaction Date <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
@@ -248,15 +249,15 @@ const FinancialTransaction: React.FC = () => {
                   <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('delivery_order_invoiced_date')} >
+                  onClick={() => toggleSort('debit')} >
                   <div className="flex items-center gap-2">debit <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('delivery_order_invoiced_date')} >
+                  onClick={() => toggleSort('credit')} >
                   <div className="flex items-center gap-2">Credit <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('delivery_order_invoiced_date')} >
+                  onClick={() => toggleSort('description')} >
                   <div className="flex items-center gap-2">Description <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
               </tr>
@@ -286,7 +287,7 @@ const FinancialTransaction: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <button className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm">
-                        {transaction.party_name} - ({transaction.party_class})
+                        {transaction.contact_name} - ({transaction.contact_class})
                       </button>
                     </td>
                     <td className="px-6 py-4">

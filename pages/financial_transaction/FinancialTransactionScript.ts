@@ -13,8 +13,9 @@ export const useFinancialTransaction = () => {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [customerFilter, setCustomerFilter] = useState<string>('');
+  const [contactTerm, setContactTerm] = useState('');
   const [transactionDateFrom, setTransactionDateFrom] = useState<string>('');
+
   const [transactionDateTo, setTransactionDateTo] = useState<string>('');
   const [sortBy, setSortBy] = useState('created_at desc');
 
@@ -27,11 +28,9 @@ export const useFinancialTransaction = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<FinancialTransaction | null>(null);
   const [transactionForDetail, setTransactionForDetail] = useState<FinancialTransaction | null>(null);
-  const [transactionToDelete, setTransactionToDelete] = useState<FinancialTransaction | null>(null);
 
   // Loading & Error States
   const [actionLoading, setActionLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<Record<string, string[]> | null>(null);
 
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -43,10 +42,10 @@ export const useFinancialTransaction = () => {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
   }, []);
 
-  const loadTransactions = useCallback(async (search = searchTerm, sort = sortBy, page = currentPage, customer = customerFilter, dateFrom = transactionDateFrom, dateTo = transactionDateTo) => {
+  const loadTransactions = useCallback(async (search = searchTerm, contact_name = contactTerm, sort = sortBy, page = currentPage, transactionDateFrom, transactionDateTo) => {
     setLoading(true);
     try {
-      const response = await api.financial_transactions.list(search, sort, page, perPage);
+      const response = await api.financial_transactions.list(search, contact_name, sort, page, perPage, transactionDateFrom, transactionDateTo);
       const transactions = response.data || [];
       const uniqueTransactions = transactions.filter((transaction, index) => transactions.findIndex(i => i.id === transaction.id) === index);
 
@@ -59,29 +58,16 @@ export const useFinancialTransaction = () => {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, sortBy, currentPage, perPage, customerFilter, transactionDateFrom, transactionDateTo, addToast]);
-
-  const loadCustomers = useCallback(async () => {
-    try {
-      const response = await api.customers.list('', '', 1, 100);
-      setCustomers(response.data);
-    } catch (err) {
-      console.error('Failed to load customers:', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadCustomers();
-  }, [loadCustomers]);
+  }, [searchTerm, contactTerm, sortBy, currentPage, perPage, transactionDateFrom, transactionDateTo, addToast]);
 
   // Debounced search/filter
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       setCurrentPage(1);
-      loadTransactions(searchTerm, sortBy, 1, customerFilter, transactionDateFrom, transactionDateTo);
+      loadTransactions(searchTerm, contactTerm, sortBy, 1, transactionDateFrom, transactionDateTo);
     }, 500);
     return () => clearTimeout(delayDebounceFn);
-  }, [searchTerm, sortBy, customerFilter, transactionDateFrom, transactionDateTo]);
+  }, [searchTerm, contactTerm, sortBy, transactionDateFrom, transactionDateTo]);
 
   const toggleSort = (field: string) => {
     setSortBy(prev => {
@@ -94,7 +80,7 @@ export const useFinancialTransaction = () => {
   const handlePageChange = (page: number) => {
     if (page < 1 || (pagination && page > pagination.total_pages)) return;
     setCurrentPage(page);
-    loadTransactions(searchTerm, sortBy, page, customerFilter, transactionDateFrom, transactionDateTo);
+    loadTransactions(searchTerm, contactTerm, sortBy, page, transactionDateFrom, transactionDateTo);
   };
 
   const formatDate = (dateString?: string) => {
@@ -111,8 +97,6 @@ export const useFinancialTransaction = () => {
   };
 
   return {
-    transactions, customers, loading, searchTerm, setSearchTerm, customerFilter, setCustomerFilter, transactionDateFrom, setTransactionDateFrom, transactionDateTo, setTransactionDateTo, sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
-    isModalOpen, setModalOpen, selectedTransaction, setSelectedTransaction, transactionForDetail, setTransactionForDetail, transactionToDelete, setTransactionToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors,
-    toasts, loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency
+    transactions, customers, loading, searchTerm, setSearchTerm, contactTerm, setContactTerm, transactionDateFrom, setTransactionDateFrom, transactionDateTo, setTransactionDateTo, sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination, isModalOpen, setModalOpen, selectedTransaction, setSelectedTransaction, transactionForDetail, setTransactionForDetail, actionLoading, serverErrors, setServerErrors, toasts, loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency
   };
 };
