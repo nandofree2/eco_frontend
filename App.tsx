@@ -22,6 +22,7 @@ import SalesOrder from './pages/sales_order/SalesOrder';
 import DeliveryOrder from './pages/delivery_order/DeliveryOrder';
 import Invoice from './pages/invoice/Invoice';
 import FinancialTransaction from './pages/financial_transaction/FinancialTransaction';
+import Deposit from './pages/deposit/Deposit';
 import AccountReceivable from './pages/account_receivable/AccountReceivable';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
@@ -234,6 +235,11 @@ const App: React.FC = () => {
 					<Route path="/financial_transactions" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="FinancialTransaction">
 							<FinancialTransaction />
+						</ProtectedRoute>
+					} />
+					<Route path="/deposits" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Deposit">
+							<Deposit />
 						</ProtectedRoute>
 					} />
 
