@@ -757,10 +757,12 @@ export const api = {
     },
   },
   deposits: {
-    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<Deposit>> => {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, depositDateFrom?: string, depositDateTo?: string): Promise<PaginatedResponse<Deposit>> => {
       const params = new URLSearchParams();
-      if (query) params.append('q[code_or_invoice_code_cont]', query);
+      if (query) params.append('q[code_or_customer_name_or_description_cont]', query);
       if (sort) params.append('q[s]', sort);
+      if (depositDateFrom) params.append('q[deposit_date_gteq]', depositDateFrom);
+      if (depositDateTo) params.append('q[deposit_date_lteq]', depositDateTo);
       params.append('page', page.toString());
       params.append('per_page', perPage.toString());
       const json = await request(`/deposits?${params.toString()}`);
