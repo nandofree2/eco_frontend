@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useDeposit } from './DepositScript';
+import { useCustomerStatement } from './CustomerStatementScript';
 import { formatDateOnly, formatYmdToDmy, parseDmyToYmd, formatDateInput } from '../../services/helper';
 import SEO from '../../components/SEO';
+import SearchableFilterDropdown from '../../components/SearchableFilterDropdown';
 import {
   Plus, Search, Edit2, Trash2, ShoppingCart,
   ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
@@ -9,67 +10,68 @@ import {
   Calendar, Receipt
 } from 'lucide-react';
 
-const Deposit: React.FC = () => {
+const CustomerStatement: React.FC = () => {
   const {
-    deposits, loading, searchTerm, setSearchTerm, depositDateFrom,
-    setDepositDateFrom, depositDateTo, setDepositDateTo, sortBy, pagination, actionLoading, serverErrors, setServerErrors, toasts,
-    loadDeposits, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
-  } = useDeposit();
+    transactions, customers, loading, searchTerm, setSearchTerm, contactTerm, setContactTerm, transactionDateFrom,
+    setTransactionDateFrom, transactionDateTo, setTransactionDateTo, sortBy, pagination, isModalOpen, setModalOpen, selectedTransaction,
+    setSelectedTransaction, transactionForDetail, setTransactionForDetail, actionLoading, serverErrors, setServerErrors, toasts,
+    loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
+  } = useCustomerStatement();
 
-  const [depositDateFromInput, setDepositDateFromInput] = useState('');
-  const [depositDateToInput, setDepositDateToInput] = useState('');
+  const [transactionDateFromInput, setTransactionDateFromInput] = useState('');
+  const [transactionDateToInput, setTransactionDateToInput] = useState('');
   const dateFromPickerRef = useRef<HTMLInputElement>(null);
   const dateToPickerRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setDepositDateFromInput(formatYmdToDmy(depositDateFrom));
-  }, [depositDateFrom]);
+    setTransactionDateFromInput(formatYmdToDmy(transactionDateFrom));
+  }, [transactionDateFrom]);
 
   useEffect(() => {
-    setDepositDateToInput(formatYmdToDmy(depositDateTo));
-  }, [depositDateTo]);
+    setTransactionDateToInput(formatYmdToDmy(transactionDateTo));
+  }, [transactionDateTo]);
 
-  const handleDepositDateFromInputChange = (val: string) => {
-    const formatted = formatDateInput(val, depositDateFromInput);
-    setDepositDateFromInput(formatted);
-
-    if (formatted.replace(/[^0-9]/g, '').length === 8) {
-      const ymd = parseDmyToYmd(formatted);
-      setDepositDateFrom(ymd);
-    } else {
-      setDepositDateFrom('');
-    }
-  };
-
-  const handleDepositDateToInputChange = (val: string) => {
-    const formatted = formatDateInput(val, depositDateToInput);
-    setDepositDateToInput(formatted);
+  const handleTransactionDateFromInputChange = (val: string) => {
+    const formatted = formatDateInput(val, transactionDateFromInput);
+    setTransactionDateFromInput(formatted);
 
     if (formatted.replace(/[^0-9]/g, '').length === 8) {
       const ymd = parseDmyToYmd(formatted);
-      setDepositDateTo(ymd);
+      setTransactionDateFrom(ymd);
     } else {
-      setDepositDateTo('');
+      setTransactionDateFrom('');
     }
   };
 
-  const handleDepositDateFromPickerChange = (ymd: string) => {
-    if (!ymd) return;
-    setDepositDateFrom(ymd);
-    setDepositDateFromInput(formatYmdToDmy(ymd));
+  const handleTransactionDateToInputChange = (val: string) => {
+    const formatted = formatDateInput(val, transactionDateToInput);
+    setTransactionDateToInput(formatted);
+
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      setTransactionDateTo(ymd);
+    } else {
+      setTransactionDateTo('');
+    }
   };
 
-  const handleDepositDateToPickerChange = (ymd: string) => {
+  const handleTransactionDateFromPickerChange = (ymd: string) => {
     if (!ymd) return;
-    setDepositDateTo(ymd);
-    setDepositDateToInput(formatYmdToDmy(ymd));
+    setTransactionDateFrom(ymd);
+    setTransactionDateFromInput(formatYmdToDmy(ymd));
+  };
+
+  const handleTransactionDateToPickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setTransactionDateTo(ymd);
+    setTransactionDateToInput(formatYmdToDmy(ymd));
   };
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
       <SEO
-        title="Deposit History"
-        description="View deposit history."
+        title="Customer Statement"
+        description="Manage customer statement."
       />
 
       {/* Toasts */}
@@ -87,16 +89,17 @@ const Deposit: React.FC = () => {
         ))}
       </div>
 
+      {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <ShoppingCart className="w-7 h-7 text-eco-600" /> Deposit History
+            <ShoppingCart className="w-7 h-7 text-eco-600" /> Customer Statement
           </h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => loadDeposits(searchTerm, sortBy, currentPage, depositDateFrom, depositDateTo)}
+            onClick={() => loadTransactions(searchTerm, contactTerm, sortBy, currentPage, transactionDateFrom, transactionDateTo)}
             className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm"
             title="Refresh Table"
           >
@@ -114,12 +117,12 @@ const Deposit: React.FC = () => {
               type="text"
               placeholder="From Date"
               className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full text-sm shadow-sm"
-              value={depositDateFromInput}
-              onChange={(e) => handleDepositDateFromInputChange(e.target.value)}
+              value={transactionDateFromInput}
+              onChange={(e) => handleTransactionDateFromInputChange(e.target.value)}
             />
-            {depositDateFromInput && (
+            {transactionDateFromInput && (
               <button
-                onClick={() => { setDepositDateFrom(''); setDepositDateFromInput(''); }}
+                onClick={() => { setTransactionDateFrom(''); setTransactionDateFromInput(''); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
                 title="Clear From Date"
               >
@@ -129,8 +132,8 @@ const Deposit: React.FC = () => {
             <input
               type="date"
               ref={dateFromPickerRef}
-              value={depositDateFrom}
-              onChange={(e) => handleDepositDateFromPickerChange(e.target.value)}
+              value={transactionDateFrom}
+              onChange={(e) => handleTransactionDateFromPickerChange(e.target.value)}
               className="sr-only"
             />
           </div>
@@ -147,12 +150,12 @@ const Deposit: React.FC = () => {
               type="text"
               placeholder="To Date"
               className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full text-sm shadow-sm"
-              value={depositDateToInput}
-              onChange={(e) => handleDepositDateToInputChange(e.target.value)}
+              value={transactionDateToInput}
+              onChange={(e) => handleTransactionDateToInputChange(e.target.value)}
             />
-            {depositDateToInput && (
+            {transactionDateToInput && (
               <button
-                onClick={() => { setDepositDateTo(''); setDepositDateToInput(''); }}
+                onClick={() => { setTransactionDateTo(''); setTransactionDateToInput(''); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
                 title="Clear To Date"
               >
@@ -162,8 +165,8 @@ const Deposit: React.FC = () => {
             <input
               type="date"
               ref={dateToPickerRef}
-              value={depositDateTo}
-              onChange={(e) => handleDepositDateToPickerChange(e.target.value)}
+              value={transactionDateTo}
+              onChange={(e) => handleTransactionDateToPickerChange(e.target.value)}
               className="sr-only"
             />
           </div>
@@ -184,22 +187,32 @@ const Deposit: React.FC = () => {
               </button>
             )}
           </div>
+
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search by Contact name..."
+              className="pl-10 pr-10 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 transition-all w-full md:w-64 shadow-sm text-sm"
+              value={contactTerm}
+              onChange={(e) => setContactTerm(e.target.value)}
+            />
+            {contactTerm && (
+              <button onClick={() => setContactTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors" title="Clear Search">
+                <XCircle className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+
+
+
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-        <div className="px-6 py-3 bg-gray-50/30 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
-              <Filter className="w-3.5 h-3.5" /> Registry Filter
-            </div>
-            <div className="h-4 w-px bg-gray-200"></div>
-            <div className="text-xs font-medium text-gray-500">
-              Displaying <span className="text-gray-900 font-bold">{deposits.length}</span> records
-            </div>
-          </div>
-        </div>
+        {/* ... bagian registry filter tetap sama ... */}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -210,72 +223,114 @@ const Deposit: React.FC = () => {
                   <div className="flex items-center gap-2">SKU <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('customer_name')}>
+                  onClick={() => toggleSort('contact_name')}>
                   <div className="flex items-center gap-2">Contact <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('deposit_type')}>
-                  <div className="flex items-center gap-2">Type <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                  onClick={() => toggleSort('sourceable_type')}>
+                  <div className="flex items-center gap-2">Source <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
                   onClick={() => toggleSort('transaction_date')}>
                   <div className="flex items-center gap-2">Transaction Date <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
-                  onClick={() => toggleSort('amount')} >
-                  <div className="flex items-center gap-2">Amount <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                  onClick={() => toggleSort('delivery_order_sales_order_customer_name')} >
+                  <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
+
+                {/* 🟢 SEBELUMNYA: debit -> SEKARANG: Uang Masuk */}
+                <th className="px-6 py-4 text-xs font-bold text-green-600 uppercase tracking-widest cursor-pointer hover:text-green-900 transition-colors group"
+                  onClick={() => toggleSort('debit')} >
+                  <div className="flex items-center gap-2">Debit +) <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+
+                {/* 🟢 SEBELUMNYA: Credit -> SEKARANG: Uang Keluar */}
+                <th className="px-6 py-4 text-xs font-bold text-red-600 uppercase tracking-widest cursor-pointer hover:text-red-900 transition-colors group"
+                  onClick={() => toggleSort('credit')} >
+                  <div className="flex items-center gap-2">credit (-) <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
+                </th>
+
+                {/* 🚀 BARU: Kolom Saldo Berjalan (Running Balance) */}
+                <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-widest">
+                  <div className="flex items-center gap-2">Balance</div>
+                </th>
+
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group"
                   onClick={() => toggleSort('description')} >
                   <div className="flex items-center gap-2">Description <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-gray-50">
-              {loading && deposits.length === 0 ? (
+              {loading && transactions.length === 0 ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
-                    <td colSpan={6} className="px-6 py-6"><div className="h-6 bg-gray-100 rounded-lg w-full"></div></td>
+                    <td colSpan={9} className="px-6 py-6"><div className="h-6 bg-gray-100 rounded-lg w-full"></div></td>
                   </tr>
                 ))
-              ) : deposits.length === 0 ? (
+              ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
+                  <td colSpan={9} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
                     <ShoppingCart className="w-16 h-16 mx-auto mb-4 opacity-5" />
-                    <p className="font-bold text-lg">No History Deposit found.</p>
+                    <p className="font-bold text-lg">No Invoices found.</p>
+                    <p className="text-sm">Create a new Invoice to get started.</p>
                   </td>
                 </tr>
               ) : (
-                deposits.map((deposit) => (
-                  <tr key={deposit.id} className="group hover:bg-eco-50/20 transition-all duration-300">
+                transactions.map((transaction) => (
+                  <tr key={transaction.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
                       <button className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm">
-                        {deposit.code}
+                        {transaction.code}
                       </button>
                     </td>
                     <td className="px-6 py-4">
                       <button className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm">
-                        {deposit.customer_name}
+                        {transaction.contact_name} - ({transaction.contact_class})
                       </button>
                     </td>
                     <td className="px-6 py-4">
                       <button className="font-bold text-gray-900 group-hover:text-eco-700 transition-colors hover:underline text-sm">
-                        {deposit.deposit_type}
+                        {transaction.source_name}
                       </button>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {deposit.deposit_date}
+                        {formatDateOnly(transaction.transaction_date) || '---'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {formatCurrency(deposit.amount) || '---'}
+                        {transaction.transaction_category}
                       </div>
                     </td>
+
+                    {/* 🟢 Menggunakan properti income dengan warna hijau */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-green-600 font-semibold">
+                        {transaction.debit > 0 ? formatCurrency(transaction.debit) : 'Rp 0'}
+                      </div>
+                    </td>
+
+                    {/* 🟢 Menggunakan properti expense dengan warna merah */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-red-600 font-semibold">
+                        {transaction.credit > 0 ? formatCurrency(transaction.credit) : 'Rp 0'}
+                      </div>
+                    </td>
+
+                    {/* 🚀 BARU: Tampilkan Nilai Running Balance */}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-900 font-bold">
+                        {formatCurrency(transaction.balance)}
+                      </div>
+                    </td>
+
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {deposit.description}
+                        {transaction.description}
                       </div>
                     </td>
                   </tr>
@@ -285,7 +340,7 @@ const Deposit: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* ... bagian pagination tetap sama ... */}
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -329,4 +384,4 @@ const Deposit: React.FC = () => {
   );
 };
 
-export default Deposit;
+export default CustomerStatement;

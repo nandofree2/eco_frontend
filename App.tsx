@@ -24,6 +24,7 @@ import Invoice from './pages/invoice/Invoice';
 import FinancialTransaction from './pages/financial_transaction/FinancialTransaction';
 import Deposit from './pages/deposit/Deposit';
 import AccountReceivable from './pages/account_receivable/AccountReceivable';
+import CustomerStatement from './pages/customerStatement/CustomerStatement';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
 import { parseRules, Subject, ability } from './services/ability';
@@ -240,6 +241,11 @@ const App: React.FC = () => {
 					<Route path="/deposits" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Deposit">
 							<Deposit />
+						</ProtectedRoute>
+					} />
+					<Route path="/customer_statements" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="CustomerStatement">
+							<CustomerStatement />
 						</ProtectedRoute>
 					} />
 

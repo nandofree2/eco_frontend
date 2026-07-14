@@ -1,7 +1,7 @@
 import {
   User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus,
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
-  Invoice, AccountReceivable, Deposit, FinancialTransaction
+  Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -792,6 +792,24 @@ export const api = {
     },
     get: async (id: string): Promise<FinancialTransaction> => {
       const json = await request(`/financial_transactions/${id}`);
+      return mapAttributes(json.data || json);
+    },
+  },
+  customer_statements: {
+    list: async (query?: string, contact_name?: string, sort?: string, page: number = 1, perPage: number = 20, transactionDateFrom?: string, transactionDateTo?: string): Promise<PaginatedResponse<CustomerStatement>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[code_or_description_cont]', query);
+      if (contact_name) params.append('q[contact_name_cont]', contact_name);
+      if (sort) params.append('q[s]', sort);
+      if (transactionDateFrom) params.append('q[transaction_date_gteq]', transactionDateFrom);
+      if (transactionDateTo) params.append('q[transaction_date_lteq]', transactionDateTo);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/customer_statements?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<CustomerStatement> => {
+      const json = await request(`/customer_statements/${id}`);
       return mapAttributes(json.data || json);
     },
   },

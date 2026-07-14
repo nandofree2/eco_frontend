@@ -335,6 +335,20 @@ export interface FinancialTransaction {
   credit: number;
   description: string;
 }
+export interface CustomerStatement {
+  id: string;
+  code?: string;
+  name?: string;
+  transaction_date: string;
+  transaction_category: string;
+  contact_name: string;
+  contact_class: string;
+  source_name: string;
+  debit: number;
+  credit: number;
+  balance: number;
+  description: string;
+}
 
 export interface AccountReceivable {
   id: string;
@@ -346,6 +360,10 @@ export interface AccountReceivable {
   invoice_code?: string;
   customer_name?: string;
   branch_name?: string;
+  with_deposit: boolean;
+  deposit_used?: number;
+  customer_deposit?: number;
+  payment_remaining?: number;
   created_at: string;
   updated_at: string;
 }

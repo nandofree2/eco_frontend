@@ -129,7 +129,7 @@ const AccountReceivableDetailModal: React.FC<AccountReceivableDetailModalProps> 
                   <span className="text-xs font-bold text-gray-500 flex items-center gap-2">
                     <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Customer Deposit
                   </span>
-                  <span className="text-sm font-bold text-blue-600">{formatCurrency((record as any).customer_deposit)}</span>
+                  <span className="text-sm font-bold text-blue-600">{formatCurrency(record.deposit_used)}</span>
                 </div>
               )}
 

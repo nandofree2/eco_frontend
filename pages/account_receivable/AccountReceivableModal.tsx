@@ -24,29 +24,35 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
     invoice_id: '',
     invoice_code: '',
     amount: '',
-    payment_type: 'cash' as PaymentType,
-    payment_date: new Date().toISOString().split('T')[0]
+    payment_type: PaymentType.Cash,
+    payment_date: new Date().toISOString().split('T')[0],
+    with_deposit: false,
   });
 
   const [paymentRemaining, setPaymentRemaining] = useState<number>(0);
+  const [totalRemaining, setTotalRemaining] = useState<number>(0);
+  const [withDeposit, setWithDeposit] = useState<boolean>(false);
   const [customerDeposit, setCustomerDeposit] = useState<number>(0);
   const [invoicesForCustomer, setInvoicesForCustomer] = useState<any[]>([]);
 
   useEffect(() => {
     if (record) {
       setFormData({
-        customer_id: '', // dropdowns use initialName for display in edit mode
+        customer_id: '',
         customer_name: record.customer_name || '',
         customer_address: (record as any).customer_address || '',
         customer_deposit: (record as any).customer_deposit?.toString() || '',
         invoice_id: (record as any).invoice_id || '',
         invoice_code: record.invoice_code || '',
         amount: record.amount.toString(),
-        payment_type: record.payment_type || 'cash',
-        payment_date: record.payment_date || new Date().toISOString().split('T')[0]
+        payment_type: record.payment_type || PaymentType.Cash,
+        payment_date: record.payment_date || new Date().toISOString().split('T')[0],
+        with_deposit: record.with_deposit || false,
       });
-      // Use fields now included in the serializer response
       setPaymentRemaining(Number((record as any).payment_remaining) || 0);
+      const total = record.with_deposit ? (Number(record.payment_remaining) - (Number(record.amount) + Number(record.customer_deposit))) : (Number(record.payment_remaining) - Number(record.amount));
+      setTotalRemaining(total);
+      setWithDeposit(record.with_deposit || false);
       setCustomerDeposit(Number((record as any).customer_deposit) || 0);
     } else {
       setFormData({
@@ -57,10 +63,13 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
         invoice_id: '',
         invoice_code: '',
         amount: '',
-        payment_type: 'cash',
-        payment_date: new Date().toISOString().split('T')[0]
+        payment_type: PaymentType.Cash,
+        payment_date: new Date().toISOString().split('T')[0],
+        with_deposit: false,
       });
       setPaymentRemaining(0);
+      setTotalRemaining(0);
+      setWithDeposit(false);
       setCustomerDeposit(0);
       setInvoicesForCustomer([]);
     }
@@ -82,6 +91,8 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
       amount: '',
     }));
     setPaymentRemaining(0);
+    setTotalRemaining(0);
+    setWithDeposit(false);
     setCustomerDeposit(deposit);
     setInvoicesForCustomer([]);
 
@@ -101,7 +112,9 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
 
     if (selectedInvoice) {
       setPaymentRemaining(Number(selectedInvoice.payment_remaining) || 0);
+      setTotalRemaining(Number(selectedInvoice.payment_remaining) || 0);
       setCustomerDeposit(Number(invoiceDeposit) || 0);
+      setWithDeposit(selectedInvoice.with_deposit || false);
       setFormData(prev => ({ ...prev, customer_deposit: String(Number(invoiceDeposit) || 0) }));
     }
     setFormData(prev => ({ ...prev, invoice_id: id, invoice_code: name || '', amount: '' }));
@@ -111,15 +124,46 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
   };
 
-  const remainingBill = Math.max(0, paymentRemaining - customerDeposit);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let val = e.target.value;
-    // Cap at paymentRemaining — deposit is handled server-side at approval time
-    if (paymentRemaining > 0 && Number(val) > paymentRemaining) {
-      val = paymentRemaining.toString();
+    const isDeposit = formData.with_deposit;
+
+    const inputAmount = Number(val) || 0;
+    const remaining = Number(paymentRemaining) || 0;
+    const deposit = Number(customerDeposit) || 0;
+
+    if (isDeposit) {
+      const maxCashNeeded = Math.max(0, remaining - deposit);
+      if (inputAmount > maxCashNeeded) val = maxCashNeeded.toString();
+    } else {
+      if (inputAmount > remaining) val = remaining.toString();
     }
     setFormData(prev => ({ ...prev, amount: val }));
+
+    const finalAmount = Number(val) || 0;
+    const total = isDeposit ? Math.max(0, remaining - (finalAmount + deposit)) : Math.max(0, remaining - finalAmount);
+
+    setTotalRemaining(total);
+  };
+
+  const handleDepositChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+
+    const remaining = Number(paymentRemaining) || 0;
+    const deposit = Number(customerDeposit) || 0;
+    let currentAmount = Number(formData.amount) || 0;
+
+    if (isChecked) {
+      const maxCashNeeded = Math.max(0, remaining - deposit);
+      if (currentAmount > maxCashNeeded) currentAmount = maxCashNeeded;
+    } else {
+      if (currentAmount > remaining) currentAmount = remaining;
+    }
+
+    setFormData(prev => ({ ...prev, with_deposit: isChecked, amount: currentAmount > 0 ? currentAmount.toString() : '' }));
+    let total = isChecked ? Math.max(0, remaining - (currentAmount + deposit)) : Math.max(0, remaining - currentAmount);
+    setTotalRemaining(total);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -129,7 +173,8 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
       amount: Number(formData.amount),
       payment_type: formData.payment_type,
       payment_date: formData.payment_date,
-      approval_status: 'draft' // default
+      with_deposit: formData.with_deposit,
+      approval_status: 'draft'
     });
   };
 
@@ -221,7 +266,59 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                  Customer Address
+                </label>
+                <input
+                  type="text"
+                  value={formData.customer_address}
+                  readOnly
+                  placeholder="—"
+                  className="w-full px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-medium text-gray-700 cursor-not-allowed"
+                />
+              </div>
+              <div>
+                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 block">Payment Type</label>
+                <select
+                  value={formData.payment_type}
+                  onChange={(e) => setFormData({ ...formData, payment_type: e.target.value as PaymentType })}
+                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium appearance-none"
+                >
+                  <option value={PaymentType.Cash}>Cash</option>
+                  <option value={PaymentType.Transfer}>Transfer</option>
+                </select>
+                {errors?.payment_type && <p className="text-red-500 text-xs mt-1 font-medium">{errors.payment_type[0]}</p>}
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                    Customer Deposit
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={formData.with_deposit || false}
+                      onChange={handleDepositChange}
+                      className="w-3.5 h-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500/20"
+                    />
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Use Deposit</span>
+                  </label>
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
+                  <input
+                    type="text"
+                    value={formatCurrency(customerDeposit).replace(/Rp\s?/, '')}
+                    readOnly
+                    className={`w-full pl-9 pr-3 py-1.5 border rounded-lg outline-none text-xs font-bold cursor-not-allowed transition-all ${formData.with_deposit
+                      ? "bg-blue-50 border-blue-200 text-blue-700 ring-2 ring-blue-500/10"
+                      : "bg-gray-100 border-gray-200 text-gray-500"
+                      }`}
+                  />
+                </div>
+              </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   Payment Remaining
@@ -238,24 +335,6 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
               </div>
               <div>
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  Customer Deposit
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
-                  <input
-                    type="text"
-                    initialName={formData.customer_deposit}
-                    value={formatCurrency(customerDeposit).replace(/Rp\s?/, '')}
-                    readOnly
-                    className="w-full pl-9 pr-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-bold text-blue-600 cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-
-
-              <div>
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                   Amount <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -268,39 +347,27 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
                     className="w-full pl-9 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium"
                     placeholder="0"
                     required
-                    min="1"
+                    min="0"
                     max={!record && paymentRemaining > 0 ? paymentRemaining : undefined}
                   />
                 </div>
                 {errors?.amount && <p className="text-red-500 text-xs mt-1 font-medium">{errors.amount[0]}</p>}
               </div>
-
               <div>
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 block">Payment Type</label>
-                <select
-                  value={formData.payment_type}
-                  onChange={(e) => setFormData({ ...formData, payment_type: e.target.value as PaymentType })}
-                  className="w-full px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium appearance-none"
-                >
-                  <option value="cash">Cash</option>
-                  <option value="transfer">Transfer</option>
-                </select>
-                {errors?.payment_type && <p className="text-red-500 text-xs mt-1 font-medium">{errors.payment_type[0]}</p>}
-              </div>
-              <div className="md:col-span-2">
                 <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                  Customer Address
+                  Total Remaining
                 </label>
-                <input
-                  type="text"
-                  value={formData.customer_address}
-                  readOnly
-                  placeholder="—"
-                  className="w-full px-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-medium text-gray-700 cursor-not-allowed"
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">Rp</span>
+                  <input
+                    type="text"
+                    value={formatCurrency(totalRemaining).replace(/Rp\s?/, '')}
+                    readOnly
+                    className="w-full pl-9 pr-3 py-1.5 bg-gray-100 border border-gray-200 rounded-lg outline-none text-xs font-bold text-gray-900 cursor-not-allowed"
+                  />
+                </div>
               </div>
             </div>
-
           </form>
         </div>
 
