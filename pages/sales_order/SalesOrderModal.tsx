@@ -146,7 +146,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
   const handleDateInputChange = (val: string) => {
     const formatted = formatDateInput(val, salesOrderDateInput);
     setSalesOrderDateInput(formatted);
-    
+
     if (formatted.replace(/[^0-9]/g, '').length === 8) {
       const ymd = parseDmyToYmd(formatted);
       if (ymd) {
@@ -508,7 +508,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                           <input
                             type="number"
                             min="0"
-                            step="100"
+                            step="1"
                             value={item.price || ''}
                             onChange={(e) => updateItem(index, 'price', parseFloat(e.target.value) || 0)}
                             className={`w-full px-2 py-1.5 bg-white border ${errors[`item_${index}_price`] ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium shadow-sm`}
@@ -569,7 +569,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
                     <Percent className="w-3.5 h-3.5 text-orange-400" /> Discount
                   </span>
-                  <input type="number" min="0" step="100" value={discountPrice || ''} onChange={(e) => setDiscountPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.discount_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
+                  <input type="number" min="0" step="1" value={discountPrice || ''} onChange={(e) => setDiscountPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.discount_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
                 </div>
                 {errors.discount_price && (
                   <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 justify-end">
@@ -582,7 +582,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
                     <DollarSign className="w-3.5 h-3.5 text-blue-400" /> Shipping
                   </span>
-                  <input type="number" min="0" step="100" value={shippingPrice || ''} onChange={(e) => setShippingPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.shipping_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
+                  <input type="number" min="0" step="1" value={shippingPrice || ''} onChange={(e) => setShippingPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.shipping_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
                 </div>
                 {errors.shipping_price && (
                   <p className="text-red-500 text-[10px] font-medium flex items-center gap-1 justify-end">
@@ -608,7 +608,7 @@ const SalesOrderModal: React.FC<SalesOrderModalProps> = ({
                   {taxInclude ? (
                     <span className="text-xs font-bold text-gray-400 italic">Included in price</span>
                   ) : (
-                    <input type="number" min="0" step="100" value={taxPrice || ''} onChange={(e) => setTaxPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.tax_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
+                    <input type="number" min="0" step="1" value={taxPrice || ''} onChange={(e) => setTaxPrice(sanitizeNumber(e.target.value))} className={`w-40 px-2 py-1 bg-white border ${errors.tax_price ? 'border-red-300' : 'border-gray-200'} rounded-lg outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-bold text-right`} placeholder="0" />
                   )}
                 </div>
                 {errors.tax_price && (
