@@ -193,6 +193,7 @@ const AccountReceivable: React.FC = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
                         {formatCurrency(ar.amount)}
+                        {ar.deposit_used && ar.deposit_used > 0 ? ` + ${formatCurrency(ar.deposit_used)} (Deposit)` : ''}
                       </div>
                     </td>
                     <td className="px-6 py-4">

@@ -327,7 +327,6 @@ const FinancialTransaction: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
