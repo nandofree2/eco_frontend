@@ -138,9 +138,15 @@ export interface Product {
   product_type: ProductType;
   base_price: number;
   category_id: string;
+  variant_id: string;
+  variant: string;
   category?: Category;
   unit_of_measurement_id: string;
   unit_of_measurement?: UnitOfMeasurement;
+  status_product_label?: string;
+  customer_ids?: string[];
+  customer_names?: string[];
+  customers?: Array<{ id: string; name: string }>;
   cover_image_url?: string;
   preview_images_urls?: string[];
   created_at: string;
@@ -348,6 +354,14 @@ export interface CustomerStatement {
   credit: number;
   balance: number;
   description: string;
+}
+
+export interface CustomerProduct {
+  id: string;
+  product_id: string;
+  product_name?: string;
+  customer_id: string;
+  customer_name?: string;
 }
 
 export interface AccountReceivable {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, Loader2, Package, Tag, AlertCircle } from 'lucide-react';
-import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus, Variant } from '../../types';
+import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus, Variant, Customer } from '../../types';
 import { api } from '../../services/api';
 
 interface ProductModalProps {
@@ -16,30 +16,37 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
   const [categories, setCategories] = useState<Category[]>([]);
   const [variants, setVariants] = useState<Variant[]>([]);
   const [units, setUnits] = useState<UnitOfMeasurement[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [custSearch, setCustSearch] = useState('');
+  const [custOpen, setCustOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     category_id: '',
+    customer_ids: [] as string[],
     variant_id: '',
     code: '',
     unit_of_measurement_id: '',
     product_type: ProductType.Physical,
     status_product: ProductStatus.Unreleased,
     description: '',
-    base_price: ""
+    base_price: 0
   });
 
   const nameRef = useRef<HTMLInputElement>(null);
+  const custWrapperRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       Promise.all([
         api.categories.list('', 'name asc', 1, 100),
         api.variants.list('', 'name asc', 1, 100),
-        api.units.list('', 'name asc', 1, 100)
-      ]).then(([catRes, variantRes, unitRes]) => {
+        api.units.list('', 'name asc', 1, 100),
+        api.customers.list('', 'name asc', 1, 100)
+      ]).then(([catRes, variantRes, unitRes, customerRes]) => {
         setCategories(catRes.data);
         setVariants(variantRes.data);
         setUnits(unitRes.data);
+        setCustomers(customerRes.data);
       }).catch(console.error);
     }
   }, [isOpen]);
@@ -49,24 +56,26 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
       setFormData({
         name: product.name,
         category_id: product.category_id || '',
+        customer_ids: (product as any).customer_ids ?? [],
         variant_id: product.variant_id || '',
         code: product.code || '',
         unit_of_measurement_id: product.unit_of_measurement_id || '',
         product_type: product.product_type ?? ProductType.Physical,
         status_product: product.status_product ?? ProductStatus.Unreleased,
         description: product.description || '',
-        base_price: product.base_price || ""
+        base_price: product.base_price || 0
       });
     } else {
       setFormData({
         name: '',
         category_id: categories[0]?.id || '',
+        customer_ids: [],
         variant_id: variants[0]?.id || '',
         unit_of_measurement_id: units[0]?.id || '',
         product_type: ProductType.Physical,
         status_product: ProductStatus.Unreleased,
         description: '',
-        base_price: ""
+        base_price: 0
       });
     }
   }, [product, categories, variants, units, isOpen]);
@@ -75,9 +84,30 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     if (serverErrors?.name) nameRef.current?.focus();
   }, [serverErrors]);
 
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (!custWrapperRef.current) return;
+      if (!custWrapperRef.current.contains(e.target as Node)) setCustOpen(false);
+    };
+    document.addEventListener('click', handleClick);
+    return () => document.removeEventListener('click', handleClick);
+  }, []);
+
   if (!isOpen) return null;
 
   const hasError = (field: string) => serverErrors && serverErrors[field];
+
+  const getCustomerLabel = (customerId: string) => {
+    const fromList = customers.find((customer) => customer.id === customerId);
+    if (fromList) return fromList.name;
+
+    const productCustomerIds = Array.isArray(product?.customer_ids) ? product.customer_ids : [];
+    const productCustomerNames = Array.isArray(product?.customer_names) ? product.customer_names : [];
+    const index = productCustomerIds.indexOf(customerId);
+
+    if (index >= 0 && productCustomerNames[index]) return productCustomerNames[index];
+    return customerId;
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -223,6 +253,55 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
                   value={formData.base_price}
                   onChange={(e) => setFormData({ ...formData, base_price: Number(e.target.value) })}
                 />
+              </div>
+            </div>
+
+            <div className="col-span-1 md:col-span-2">
+              <label className={`block text-xs font-black uppercase tracking-widest mb-1.5 ${hasError('customer_ids') ? 'text-red-600' : 'text-gray-400'}`}>Assigned Customers</label>
+              <div className="relative" ref={custWrapperRef}>
+                <div className="w-full bg-gray-50 border border-gray-100 rounded-xl px-3 py-2 flex flex-wrap gap-2 items-center" onClick={() => { setCustOpen(true); }}>
+                  {formData.customer_ids.map((id) => (
+                    <span key={id} className="bg-white border border-gray-100 rounded-full px-3 py-1 text-xs font-medium flex items-center gap-2">
+                      <span>{getCustomerLabel(id)}</span>
+                      <button type="button" onClick={(e) => { e.stopPropagation(); setFormData({ ...formData, customer_ids: formData.customer_ids.filter((x) => x !== id) }); }} className="text-gray-400 hover:text-gray-600">×</button>
+                    </span>
+                  ))}
+
+                  <input
+                    type="text"
+                    value={custSearch}
+                    onChange={(e) => { setCustSearch(e.target.value); setCustOpen(true); }}
+                    onFocus={() => setCustOpen(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const filtered = customers.filter(c => c.name.toLowerCase().includes(custSearch.toLowerCase()) && !formData.customer_ids.includes(c.id));
+                        if (filtered[0]) {
+                          setFormData({ ...formData, customer_ids: [...formData.customer_ids, filtered[0].id] });
+                          setCustSearch('');
+                        }
+                      } else if (e.key === 'Backspace' && !custSearch) {
+                        // remove last
+                        setFormData({ ...formData, customer_ids: formData.customer_ids.slice(0, -1) });
+                      }
+                    }}
+                    placeholder={formData.customer_ids.length === 0 ? 'Search and add customers...' : ''}
+                    className="flex-1 min-w-[120px] bg-transparent outline-none text-sm px-1 py-1"
+                  />
+                </div>
+
+                {custOpen && (
+                  <div className="absolute z-20 mt-1 w-full bg-white border border-gray-100 rounded-xl shadow-lg max-h-48 overflow-auto">
+                    {customers.filter(c => c.name.toLowerCase().includes(custSearch.toLowerCase()) && !formData.customer_ids.includes(c.id)).map(c => (
+                      <button key={c.id} type="button" onClick={() => { setFormData({ ...formData, customer_ids: [...formData.customer_ids, c.id] }); setCustSearch(''); setCustOpen(true); }} className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm">
+                        {c.name}
+                      </button>
+                    ))}
+                    {customers.filter(c => c.name.toLowerCase().includes(custSearch.toLowerCase()) && !formData.customer_ids.includes(c.id)).length === 0 && (
+                      <div className="px-4 py-2 text-sm text-gray-400">No customers found</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

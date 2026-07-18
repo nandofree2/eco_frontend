@@ -5,7 +5,7 @@ import { ProductType } from '../../types';
 interface ProductDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: any; // Using any to handle missing fields in Product interface gracefully
+  product: any;
   onEdit?: (product: any) => void;
   onDelete?: (product: any) => void;
 }
@@ -64,34 +64,36 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-1 items-start">
+          <div className="grid grid-cols-2 gap-1">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Hash className="w-3.5 h-3.5" /> SKU Code</p>
               <p className="text-sm font-bold text-gray-900 break-all">{product.code || '-'}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-1 items-start">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5" /> Base Price</p>
               <p className="text-sm font-bold text-gray-900">{formatPrice(product.base_price)}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-1 items-start">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Layers className="w-3.5 h-3.5" /> Category</p>
               <p className="text-sm font-bold text-gray-900">{product.category?.name || '-'}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-1 items-start">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> Variant</p>
               <p className="text-sm font-bold text-gray-900">{product.variant?.name || '-'}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100 flex flex-col gap-1 items-start col-span-2">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start col-span-2">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Measurement Unit</p>
               <p className="text-sm font-bold text-gray-900 capitalize">{product.unit_of_measurement?.name || '-'}</p>
             </div>
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start col-span-2">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Customer list</p>
+              <p className="text-sm font-bold text-gray-900 capitalize">{product.customers?.map((customer: any) => customer.name).join(', ') || '-'}</p>
+            </div>
+
           </div>
 
           <div className="space-y-5">
             <div className="space-y-3">
-              <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5" /> Context & Metadata
-              </h4>
               <div className="space-y-3 bg-gray-50/30 p-4 rounded-2xl border border-gray-100">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Description</span>

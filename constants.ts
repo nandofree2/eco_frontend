@@ -92,7 +92,8 @@ export const NAV_STRUCTURE: NavItem[] = [
     children: [
       { label: 'Financial Transactions', path: '/financial_transactions', icon: ClipboardMinus, resource: 'FinancialTransaction', description: 'Financial Transaction' },
       { label: 'Deposits History', path: '/deposits', icon: Shield, resource: 'Deposit', description: 'Deposit History' },
-      { label: 'Customer Statements', path: '/customer_statements', icon: Shield, resource: 'CustomerStatement', description: 'Customer Statements' }
+      { label: 'Customer Statements', path: '/customer_statements', icon: Shield, resource: 'CustomerStatement', description: 'Customer Statements' },
+      { label: 'Customer Products', path: '/customer_products', icon: Shield, resource: 'CustomerProduct', description: 'Customer Products' }
     ]
   },
 ];
