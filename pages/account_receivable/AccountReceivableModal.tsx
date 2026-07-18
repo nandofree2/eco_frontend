@@ -50,7 +50,8 @@ const AccountReceivableModal: React.FC<AccountReceivableModalProps> = ({
         with_deposit: record.with_deposit || false,
       });
       setPaymentRemaining(Number((record as any).payment_remaining) || 0);
-      const total = record.with_deposit ? (Number(record.payment_remaining) - (Number(record.amount) + Number(record.customer_deposit))) : (Number(record.payment_remaining) - Number(record.amount));
+
+      const total = record.with_deposit ? Math.max(0, (Number(record.payment_remaining) - (Number(record.amount) + Number(record.customer_deposit)))) : Math.max(0, (Number(record.payment_remaining) - Number(record.amount)));
       setTotalRemaining(total);
       setWithDeposit(record.with_deposit || false);
       setCustomerDeposit(Number((record as any).customer_deposit) || 0);
