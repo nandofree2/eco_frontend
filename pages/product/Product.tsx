@@ -9,7 +9,7 @@ import ProductModal from './ProductModal';
 import ProductDetailModal from './ProductDetailModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useProduct } from './ProductScript';
-import { ProductType } from '../../types';
+import { ProductType, Category } from '../../types';
 
 const Product: React.FC = () => {
   const {

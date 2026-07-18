@@ -1,7 +1,7 @@
 import {
   User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus,
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
-  Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement
+  Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement,CustomerProduct
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -775,6 +775,17 @@ export const api = {
     create: async (data: Partial<Deposit>) => {
       const json = await request('/deposits', { method: 'POST', body: JSON.stringify({ deposit: data }) });
       return mapAttributes(json.data || json);
+    },
+  },
+  customer_products: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10): Promise<PaginatedResponse<CustomerProduct>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[customer_name_or_product_name_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/customer_products?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
     },
   },
   financial_transactions: {
