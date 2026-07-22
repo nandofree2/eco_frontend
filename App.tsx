@@ -25,7 +25,7 @@ import FinancialTransaction from './pages/financial_transaction/FinancialTransac
 import Deposit from './pages/deposit/Deposit';
 import AccountReceivable from './pages/account_receivable/AccountReceivable';
 import CustomerProduct from './pages/customer_product/CustomerProduct';
-import CustomerStatement from './pages/customerStatement/CustomerStatement';
+import CustomerStatement from './pages/customer_statement/CustomerStatement';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
 import { parseRules, Subject, ability } from './services/ability';
