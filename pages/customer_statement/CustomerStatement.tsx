@@ -7,7 +7,7 @@ import {
   Plus, Search, Edit2, Trash2, ShoppingCart,
   ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
   ChevronLeft, ChevronRight, Filter, Building2, Users, X, AlertTriangle,
-  Calendar, Receipt
+  Calendar, Receipt, Printer
 } from 'lucide-react';
 
 const CustomerStatement: React.FC = () => {
@@ -15,7 +15,7 @@ const CustomerStatement: React.FC = () => {
     transactions, customers, loading, searchTerm, setSearchTerm, contactTerm, setContactTerm, transactionDateFrom,
     setTransactionDateFrom, transactionDateTo, setTransactionDateTo, sortBy, pagination, isModalOpen, setModalOpen, selectedTransaction,
     setSelectedTransaction, transactionForDetail, setTransactionForDetail, actionLoading, serverErrors, setServerErrors, toasts,
-    loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency, currentPage, perPage,
+    loadTransactions, toggleSort, handlePageChange, formatDate, formatCurrency, formatDescriptionHtml, currentPage, perPage, handlePrint, isPrinting,
   } = useCustomerStatement();
 
   const [transactionDateFromInput, setTransactionDateFromInput] = useState('');
@@ -104,6 +104,14 @@ const CustomerStatement: React.FC = () => {
             title="Refresh Table"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+          <button
+            onClick={handlePrint}
+            disabled={isPrinting}
+            className="p-2 text-gray-400 hover:text-eco-600 hover:bg-eco-50 rounded-xl transition-all border border-gray-200 bg-white shadow-sm disabled:opacity-50"
+            title="Print Data Table"
+          >
+            <Printer className={`w-5 h-5 ${isPrinting ? 'animate-spin' : ''}`} />
           </button>
           <div className="relative group w-full md:w-44">
             <button
@@ -203,17 +211,10 @@ const CustomerStatement: React.FC = () => {
               </button>
             )}
           </div>
-
-
-
-
         </div>
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-        {/* ... bagian registry filter tetap sama ... */}
-
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50/50">
@@ -239,19 +240,16 @@ const CustomerStatement: React.FC = () => {
                   <div className="flex items-center gap-2">Category <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
 
-                {/* 🟢 SEBELUMNYA: debit -> SEKARANG: Uang Masuk */}
                 <th className="px-6 py-4 text-xs font-bold text-green-600 uppercase tracking-widest cursor-pointer hover:text-green-900 transition-colors group"
                   onClick={() => toggleSort('debit')} >
                   <div className="flex items-center gap-2">Debit +) <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
 
-                {/* 🟢 SEBELUMNYA: Credit -> SEKARANG: Uang Keluar */}
                 <th className="px-6 py-4 text-xs font-bold text-red-600 uppercase tracking-widest cursor-pointer hover:text-red-900 transition-colors group"
                   onClick={() => toggleSort('credit')} >
                   <div className="flex items-center gap-2">credit (-) <ArrowUpDown className="w-3 h-3 group-hover:text-eco-600" /></div>
                 </th>
 
-                {/* 🚀 BARU: Kolom Saldo Berjalan (Running Balance) */}
                 <th className="px-6 py-4 text-xs font-bold text-gray-700 uppercase tracking-widest">
                   <div className="flex items-center gap-2">Balance</div>
                 </th>
@@ -307,21 +305,18 @@ const CustomerStatement: React.FC = () => {
                       </div>
                     </td>
 
-                    {/* 🟢 Menggunakan properti income dengan warna hijau */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-green-600 font-semibold">
                         {transaction.debit > 0 ? formatCurrency(transaction.debit) : 'Rp 0'}
                       </div>
                     </td>
 
-                    {/* 🟢 Menggunakan properti expense dengan warna merah */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-red-600 font-semibold">
                         {transaction.credit > 0 ? formatCurrency(transaction.credit) : 'Rp 0'}
                       </div>
                     </td>
 
-                    {/* 🚀 BARU: Tampilkan Nilai Running Balance */}
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-900 font-bold">
                         {formatCurrency(transaction.balance)}
@@ -329,9 +324,10 @@ const CustomerStatement: React.FC = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {transaction.description}
-                      </div>
+                      <div
+                        className="flex items-center gap-2 text-sm text-gray-600 font-medium"
+                        dangerouslySetInnerHTML={{ __html: formatDescriptionHtml(transaction.description) }}
+                      />
                     </td>
                   </tr>
                 ))
@@ -340,7 +336,6 @@ const CustomerStatement: React.FC = () => {
           </table>
         </div>
 
-        {/* ... bagian pagination tetap sama ... */}
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
