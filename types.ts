@@ -118,15 +118,15 @@ export interface UnitOfMeasurement {
 }
 
 export enum ProductStatus {
-  Unreleased = 0,
-  Expired = 1,
-  Active = 2,
-  Deactive = 3,
+  Unreleased = 'unreleased',
+  Expired = 'expired',
+  Active = 'active',
+  Deactive = 'deactive',
 }
 
 export enum ProductType {
-  Physical = 0,
-  Service = 1,
+  Physical = 'physical',
+  Service = 'service',
 }
 
 export interface Product {
@@ -139,7 +139,7 @@ export interface Product {
   base_price: number;
   category_id: string;
   variant_id: string;
-  variant: string;
+  variant: Variant;
   category?: Category;
   unit_of_measurement_id: string;
   unit_of_measurement?: UnitOfMeasurement;
@@ -148,7 +148,7 @@ export interface Product {
   customer_names?: string[];
   customers?: Array<{ id: string; name: string }>;
   cover_image_url?: string;
-  preview_images_urls?: string[];
+  preview_image_urls?: string[];
   created_at: string;
 }
 
@@ -158,6 +158,8 @@ export interface StockProduct {
   marketing_stock: number;
   product_id: string;
   product_name: string;
+  product_cover_image_url?: string;
+  product_preview_image_urls?: string[];
   branch_id: string;
   branch_name: string;
   created_at: string;

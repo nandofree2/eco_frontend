@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Package, Tag, Layers, Scale, Calendar, Clock, Activity, Info, BarChart3, Edit2, Trash2, Hash, DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Package, Tag, Layers, Scale, Calendar, Clock, Activity, Info, BarChart3, Edit2, Trash2, Hash, DollarSign, ChevronLeft, ChevronRight, Image } from 'lucide-react';
 import { ProductType } from '../../types';
 
 interface ProductDetailModalProps {
@@ -11,6 +11,9 @@ interface ProductDetailModalProps {
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose, product, onEdit, onDelete }) => {
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const previewUrls: string[] = product?.preview_image_urls || [];
+
   if (!isOpen || !product) return null;
 
   const formatDate = (dateString?: string) => {
@@ -47,9 +50,6 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
 
         <div className="p-6 space-y-6 overflow-y-auto">
           <div className="flex flex-col gap-4 items-center text-center">
-            <div className="w-20 h-20 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 border border-indigo-100 shadow-sm shrink-0">
-              <Package className="w-10 h-10" />
-            </div>
             <div className="space-y-1.5">
               <h3 className="text-2xl font-black text-gray-900 leading-tight">{product.name}</h3>
               <div className="flex justify-center gap-2">
@@ -81,16 +81,90 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ isOpen, onClose
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" /> Variant</p>
               <p className="text-sm font-bold text-gray-900">{product.variant?.name || '-'}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start col-span-2">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start ">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Measurement Unit</p>
               <p className="text-sm font-bold text-gray-900 capitalize">{product.unit_of_measurement?.name || '-'}</p>
             </div>
-            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start col-span-2">
+            <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-200 flex flex-col gap-1 items-start ">
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Customer list</p>
               <p className="text-sm font-bold text-gray-900 capitalize">{product.customers?.map((customer: any) => customer.name).join(', ') || '-'}</p>
             </div>
 
           </div>
+          {product.cover_image_url && (
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                <Image className="w-3.5 h-3.5" /> Cover Image
+              </p>
+              <div className="w-full rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                <img
+                  src={product.cover_image_url}
+                  alt={`${product.name} cover`}
+                  className="w-full h-52 object-cover"
+                />
+              </div>
+            </div>
+          )}
+
+          {previewUrls.length > 0 && (
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                <Image className="w-3.5 h-3.5" /> Preview Images
+              </p>
+              <div className="relative">
+                <img
+                  src={previewUrls[previewIndex]}
+                  alt={`Preview ${previewIndex + 1}`}
+                  className="w-full h-48 object-cover rounded-2xl border border-gray-100 shadow-sm"
+                />
+                {previewUrls.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewIndex(i => (i - 1 + previewUrls.length) % previewUrls.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow transition-all"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewIndex(i => (i + 1) % previewUrls.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow transition-all"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {previewUrls.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setPreviewIndex(i)}
+                          className={`h-1.5 rounded-full transition-all ${i === previewIndex ? 'bg-eco-600 w-4' : 'w-1.5 bg-white/80'}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {previewIndex + 1} / {previewUrls.length}
+                </span>
+              </div>
+              {previewUrls.length > 1 && (
+                <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                  {previewUrls.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setPreviewIndex(i)}
+                      className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 transition-all ${i === previewIndex ? 'border-eco-500' : 'border-gray-100 opacity-60 hover:opacity-100'}`}
+                    >
+                      <img src={url} alt={`thumb ${i + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-5">
             <div className="space-y-3">

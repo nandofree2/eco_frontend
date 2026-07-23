@@ -9,36 +9,12 @@ import ProductModal from './ProductModal';
 import ProductDetailModal from './ProductDetailModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import { useProduct } from './ProductScript';
-import { ProductType, Category } from '../../types';
+import { ProductType, Category, Variant } from '../../types';
 
 const Product: React.FC = () => {
-  const {
-    products,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    sortBy,
-    currentPage,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    selectedProduct,
-    setSelectedProduct,
-    productToDelete,
-    setProductToDelete,
-    actionLoading,
-    deleteLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadProducts,
-    handleCreateOrUpdate,
-    confirmDelete,
-    toggleSort,
+  const { products, loading, searchTerm, setSearchTerm, sortBy, currentPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen,
+    setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedProduct, setSelectedProduct, productToDelete, setProductToDelete,
+    actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadProducts, handleCreateOrUpdate, confirmDelete, toggleSort,
     handlePageChange
   } = useProduct();
 
@@ -222,7 +198,7 @@ const Product: React.FC = () => {
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Record <span className="text-gray-900">{((currentPage - 1) * 10) + 1}</span> - <span className="text-gray-900">{Math.min(currentPage * 10, pagination.total_count)}</span>
+              Record <span className="text-gray-900">{((currentPage - 1) * 20) + 1}</span> - <span className="text-gray-900">{Math.min(currentPage * 20, pagination.total_count)}</span>
               <span className="mx-2">of</span>
               <span className="text-eco-600">{pagination.total_count}</span>
             </div>
