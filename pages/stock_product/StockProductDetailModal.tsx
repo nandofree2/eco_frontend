@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StockProduct } from '../../types';
-import { X, Boxes, Package, Building2, Calendar, Clock, ArrowRight } from 'lucide-react';
+import { X, Boxes, Package, Building2, Calendar, Clock, ArrowRight, Image, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface StockProductDetailModalProps {
   isOpen: boolean;
@@ -13,6 +13,9 @@ const StockProductDetailModal: React.FC<StockProductDetailModalProps> = ({
   onClose,
   stockProduct
 }) => {
+  const [previewIndex, setPreviewIndex] = useState(0);
+  const previewUrls: string[] = stockProduct?.product_preview_image_urls || [];
+
   if (!isOpen || !stockProduct) return null;
 
   const formatDate = (dateString?: string) => {
@@ -79,7 +82,78 @@ const StockProductDetailModal: React.FC<StockProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Stock Levels */}
+          {/* Product Cover Image */}
+          {stockProduct.product_cover_image_url && (
+            <div className="w-full rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+              <img
+                src={stockProduct.product_cover_image_url}
+                alt={stockProduct.product_name}
+                className="w-full h-44 object-cover"
+              />
+            </div>
+          )}
+
+          {/* Product Preview Images */}
+          {previewUrls.length > 0 && (
+            <div>
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5 mb-2">
+                <Image className="w-3.5 h-3.5" /> Product Previews
+              </p>
+              <div className="relative">
+                <img
+                  src={previewUrls[previewIndex]}
+                  alt={`Preview ${previewIndex + 1}`}
+                  className="w-full h-44 object-cover rounded-2xl border border-gray-100 shadow-sm"
+                />
+                {previewUrls.length > 1 && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewIndex(i => (i - 1 + previewUrls.length) % previewUrls.length)}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow transition-all"
+                    >
+                      <ChevronLeft className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPreviewIndex(i => (i + 1) % previewUrls.length)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-1 shadow transition-all"
+                    >
+                      <ChevronRight className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+                      {previewUrls.map((_, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setPreviewIndex(i)}
+                          className={`h-1.5 rounded-full transition-all ${i === previewIndex ? 'bg-eco-600 w-4' : 'w-1.5 bg-white/80'}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+                <span className="absolute top-2 right-2 bg-black/50 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {previewIndex + 1} / {previewUrls.length}
+                </span>
+              </div>
+              {previewUrls.length > 1 && (
+                <div className="flex gap-2 mt-2 overflow-x-auto pb-1">
+                  {previewUrls.map((url, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setPreviewIndex(i)}
+                      className={`shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${i === previewIndex ? 'border-eco-500' : 'border-gray-100 opacity-60 hover:opacity-100'}`}
+                    >
+                      <img src={url} alt={`thumb ${i + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="p-5 bg-eco-50 rounded-3xl border border-eco-100 text-center">
               <p className="text-[10px] font-black text-eco-600 uppercase tracking-[0.2em] mb-2">Physical Stock</p>
@@ -93,7 +167,6 @@ const StockProductDetailModal: React.FC<StockProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Timestamps */}
           <div className="pt-6 border-t border-gray-100 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-gray-400">

@@ -12,11 +12,11 @@ export const useProduct = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('name asc');
+  const [sortBy, setSortBy] = useState('created_at desc');
 
   // Pagination States
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage] = useState(20);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   // Modal States
@@ -119,35 +119,9 @@ export const useProduct = () => {
   };
 
   return {
-    products,
-    loading,
-    searchTerm,
-    setSearchTerm,
-    sortBy,
-    setSortBy,
-    currentPage,
-    setCurrentPage,
-    perPage,
-    pagination,
-    isModalOpen,
-    setModalOpen,
-    isDetailModalOpen,
-    setDetailModalOpen,
-    isDeleteModalOpen,
-    setDeleteModalOpen,
-    selectedProduct,
-    setSelectedProduct,
-    productToDelete,
-    setProductToDelete,
-    actionLoading,
-    deleteLoading,
-    serverErrors,
-    setServerErrors,
-    toasts,
-    loadProducts,
-    handleCreateOrUpdate,
-    confirmDelete,
-    toggleSort,
-    handlePageChange
+    products, loading, searchTerm, setSearchTerm, sortBy, setSortBy, currentPage, setCurrentPage, perPage, pagination,
+    isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen, selectedProduct,
+    setSelectedProduct, productToDelete, setProductToDelete, actionLoading, deleteLoading, serverErrors, setServerErrors, toasts,
+    addToast, loadProducts, handleCreateOrUpdate, confirmDelete, toggleSort, handlePageChange
   };
 };

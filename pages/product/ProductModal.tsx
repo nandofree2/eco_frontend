@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Save, Loader2, Package, Tag, AlertCircle } from 'lucide-react';
+import { X, Save, Loader2, Package, Tag, AlertCircle, ImagePlus, XCircle } from 'lucide-react';
 import { Product, Category, UnitOfMeasurement, ProductType, ProductStatus, Variant, Customer } from '../../types';
 import { api } from '../../services/api';
 
@@ -32,6 +32,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     base_price: 0
   });
 
+  // Image states
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [existingCoverUrl, setExistingCoverUrl] = useState<string | null>(null);
+
+  const [previewImageFiles, setPreviewImageFiles] = useState<File[]>([]);
+  const [previewImagePreviews, setPreviewImagePreviews] = useState<string[]>([]);
+  const [existingPreviewUrls, setExistingPreviewUrls] = useState<string[]>([]);
+
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const previewInputRef = useRef<HTMLInputElement>(null);
   const nameRef = useRef<HTMLInputElement>(null);
   const custWrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -65,6 +76,12 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         description: product.description || '',
         base_price: product.base_price || 0
       });
+      setExistingCoverUrl(product.cover_image_url || null);
+      setExistingPreviewUrls(product.preview_image_urls || []);
+      setCoverImageFile(null);
+      setCoverImagePreview(null);
+      setPreviewImageFiles([]);
+      setPreviewImagePreviews([]);
     } else {
       setFormData({
         name: '',
@@ -72,11 +89,18 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         customer_ids: [],
         variant_id: variants[0]?.id || '',
         unit_of_measurement_id: units[0]?.id || '',
+        code: '',
         product_type: ProductType.Physical,
         status_product: ProductStatus.Unreleased,
         description: '',
         base_price: 0
       });
+      setExistingCoverUrl(null);
+      setExistingPreviewUrls([]);
+      setCoverImageFile(null);
+      setCoverImagePreview(null);
+      setPreviewImageFiles([]);
+      setPreviewImagePreviews([]);
     }
   }, [product, categories, variants, units, isOpen]);
 
@@ -92,6 +116,14 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     document.addEventListener('click', handleClick);
     return () => document.removeEventListener('click', handleClick);
   }, []);
+
+  // Cleanup object URLs on unmount/change
+  useEffect(() => {
+    return () => {
+      if (coverImagePreview) URL.revokeObjectURL(coverImagePreview);
+      previewImagePreviews.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [coverImagePreview, previewImagePreviews]);
 
   if (!isOpen) return null;
 
@@ -109,10 +141,55 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
     return customerId;
   };
 
+  const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (coverImagePreview) URL.revokeObjectURL(coverImagePreview);
+    setCoverImageFile(file);
+    setCoverImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleRemoveCoverImage = () => {
+    if (coverImagePreview) URL.revokeObjectURL(coverImagePreview);
+    setCoverImageFile(null);
+    setCoverImagePreview(null);
+    setExistingCoverUrl(null);
+    if (coverInputRef.current) coverInputRef.current.value = '';
+  };
+
+  const handlePreviewImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const newPreviews = files.map(f => URL.createObjectURL(f));
+    setPreviewImageFiles(prev => [...prev, ...files]);
+    setPreviewImagePreviews(prev => [...prev, ...newPreviews]);
+    if (previewInputRef.current) previewInputRef.current.value = '';
+  };
+
+  const handleRemoveNewPreview = (index: number) => {
+    URL.revokeObjectURL(previewImagePreviews[index]);
+    setPreviewImageFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingPreview = (index: number) => {
+    setExistingPreviewUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const submitData: any = { ...formData };
+    if (coverImageFile) submitData.cover_image = coverImageFile;
+    if (previewImageFiles.length > 0) submitData.preview_images = previewImageFiles;
+    onSubmit(submitData);
+  };
+
+  const displayCover = coverImagePreview || existingCoverUrl;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100">
-        <div className="bg-eco-600 px-6 py-4 flex items-center justify-between">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-gray-100 max-h-[95vh] flex flex-col">
+        <div className="bg-eco-600 px-6 py-4 flex items-center justify-between shrink-0">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Package className="w-5 h-5" />
             {product ? 'Modify Product Identity' : 'Register New Product'}
@@ -121,7 +198,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
         </div>
 
         {serverErrors && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2">
+          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3 animate-in slide-in-from-top-2 shrink-0">
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
             <div className="flex-1">
               <p className="text-sm font-bold text-red-800">Validation Protocol Failure</p>
@@ -136,7 +213,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
           </div>
         )}
 
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="col-span-1 md:col-span-2">
               <label className={`block text-xs font-black uppercase tracking-widest mb-1.5 ${hasError('name') ? 'text-red-600' : 'text-gray-400'}`}>Product Name</label>
@@ -314,6 +391,134 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Provide context regarding product origin, usage, or specifications..."
             />
+          </div>
+
+          {/* Cover Image */}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">
+              Cover Image <span className="text-gray-300 font-medium normal-case tracking-normal">(optional)</span>
+            </label>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverImageChange}
+            />
+            {displayCover ? (
+              <div className="relative group inline-block">
+                <img
+                  src={displayCover}
+                  alt="Cover preview"
+                  className="h-40 w-auto max-w-full rounded-2xl object-cover border border-gray-100 shadow-sm"
+                />
+                <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-white/90 text-gray-700 text-xs font-bold rounded-lg hover:bg-white transition-all"
+                  >
+                    Change
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoverImage}
+                    className="px-3 py-1.5 bg-red-500/90 text-white text-xs font-bold rounded-lg hover:bg-red-500 transition-all"
+                  >
+                    Remove
+                  </button>
+                </div>
+                {coverImageFile && (
+                  <span className="absolute top-2 right-2 bg-eco-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">NEW</span>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                className="w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-eco-400 hover:text-eco-500 hover:bg-eco-50/50 transition-all group"
+              >
+                <ImagePlus className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold">Click to upload cover image</span>
+                <span className="text-[10px] text-gray-300">PNG, JPG, WEBP up to 10MB</span>
+              </button>
+            )}
+          </div>
+
+          {/* Preview Images */}
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">
+              Preview Images <span className="text-gray-300 font-medium normal-case tracking-normal">(optional, multiple)</span>
+            </label>
+            <input
+              ref={previewInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handlePreviewImagesChange}
+            />
+
+            {(existingPreviewUrls.length > 0 || previewImagePreviews.length > 0) ? (
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-3">
+                  {/* Existing images from server */}
+                  {existingPreviewUrls.map((url, i) => (
+                    <div key={`existing-${i}`} className="relative group">
+                      <img
+                        src={url}
+                        alt={`Preview ${i + 1}`}
+                        className="w-24 h-24 rounded-xl object-cover border border-gray-100 shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveExistingPreview(i)}
+                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full p-0.5 shadow-md"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Newly selected images */}
+                  {previewImagePreviews.map((url, i) => (
+                    <div key={`new-${i}`} className="relative group">
+                      <img
+                        src={url}
+                        alt={`New preview ${i + 1}`}
+                        className="w-24 h-24 rounded-xl object-cover border-2 border-eco-400 shadow-sm"
+                      />
+                      <span className="absolute top-1 left-1 bg-eco-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">NEW</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveNewPreview(i)}
+                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-red-500 text-white rounded-full p-0.5 shadow-md"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {/* Add more button */}
+                  <button
+                    type="button"
+                    onClick={() => previewInputRef.current?.click()}
+                    className="w-24 h-24 border-2 border-dashed border-gray-200 rounded-xl flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-eco-400 hover:text-eco-500 hover:bg-eco-50/50 transition-all"
+                  >
+                    <ImagePlus className="w-6 h-6" />
+                    <span className="text-[9px] font-bold">Add More</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => previewInputRef.current?.click()}
+                className="w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-eco-400 hover:text-eco-500 hover:bg-eco-50/50 transition-all group"
+              >
+                <ImagePlus className="w-8 h-8 group-hover:scale-110 transition-transform" />
+                <span className="text-xs font-bold">Click to upload preview images</span>
+                <span className="text-[10px] text-gray-300">Multiple images allowed</span>
+              </button>
+            )}
           </div>
 
           <div className="pt-2 flex gap-3">

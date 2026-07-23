@@ -80,17 +80,17 @@ const mapAttributes = (item: any) => {
     return obj.attributes ? { id: obj.id, ...obj.attributes } : obj;
   };
 
-  // Mapping string enums from backend to integer enums for frontend
-  const statusMap: Record<string, number> = { unreleased: 0, expired: 1, active: 2, deactive: 3 };
-  const typeMap: Record<string, number> = { physical: 0, service: 1 };
+  // Reverse mapping for numeric enums if backend returns integers, otherwise use string enums
+  const statusReverseMap: Record<number, string> = { 0: 'unreleased', 1: 'expired', 2: 'active', 3: 'deactive' };
+  const typeReverseMap: Record<number, string> = { 0: 'physical', 1: 'service' };
   const membershipMap: Record<string, number> = { regular: 0, member: 1, vip: 2 };
 
-  const status_product = typeof attrs.status_product === 'string'
-    ? (statusMap[attrs.status_product] ?? attrs.status_product)
+  const status_product = typeof attrs.status_product === 'number'
+    ? statusReverseMap[attrs.status_product] || attrs.status_product
     : attrs.status_product;
 
-  const product_type = typeof attrs.product_type === 'string'
-    ? (typeMap[attrs.product_type] ?? attrs.product_type)
+  const product_type = typeof attrs.product_type === 'number'
+    ? typeReverseMap[attrs.product_type] || attrs.product_type
     : attrs.product_type;
 
   const membership = typeof attrs.membership === 'string'
@@ -138,7 +138,7 @@ const mapAttributes = (item: any) => {
     sales_order_id: attrs.sales_order_id || getNested(attrs.sales_order)?.id,
     sales_order_code: attrs.sales_order_code || getNested(attrs.sales_order)?.code,
     cover_image_url: attrs.cover_image_url || attrs.cover_image,
-    preview_images_urls: attrs.preview_images_urls || attrs.preview_images || attrs.preview_image_urls,
+    preview_image_urls: attrs.preview_image_urls || attrs.preview_images_urls || attrs.preview_images,
     category: getNested(attrs.category),
     unit_of_measurement: getNested(attrs.unit_of_measurement),
     role: getNested(attrs.role),
@@ -243,7 +243,7 @@ export const api = {
   },
 
   products: {
-    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 10, status?: string, type?: string): Promise<PaginatedResponse<Product>> => {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 20, status?: string, type?: string): Promise<PaginatedResponse<Product>> => {
       const params = new URLSearchParams();
       if (query) params.append('q[name_or_code_or_variant_name_cont]', query);
       if (sort) params.append('q[s]', sort);
@@ -258,11 +258,75 @@ export const api = {
       const json = await request(`/products/${id}`);
       return mapAttributes(json.data || json);
     },
-    create: async (data: Partial<Product>) => {
+    create: async (data: any) => {
+      const hasFiles = data.cover_image instanceof File || (Array.isArray(data.preview_images) && data.preview_images.some((f: any) => f instanceof File));
+      if (hasFiles) {
+        const formData = new FormData();
+        const { cover_image, preview_images, ...rest } = data;
+        Object.entries(rest).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            (value as any[]).forEach((v) => formData.append(`product[${key}][]`, String(v)));
+          } else if (value !== null && value !== undefined) {
+            formData.append(`product[${key}]`, String(value));
+          }
+        });
+        if (cover_image instanceof File) formData.append('product[cover_image]', cover_image);
+        if (Array.isArray(preview_images)) {
+          preview_images.forEach((f: File) => { if (f instanceof File) formData.append('product[preview_images][]', f); });
+        }
+        const token = localStorage.getItem('ecolocal_token');
+        const authHeader = token ? { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {};
+        const response = await fetch(`${API_BASE_URL}/products`, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'ngrok-skip-browser-warning': NGROK_SKIP_VAL || '', ...authHeader },
+          body: formData
+        });
+        if (!response.ok) {
+          const errData = await safeParseJson(response);
+          const error: any = new Error(errData.message || 'Create failed');
+          error.status = response.status;
+          error.errors = errData.errors;
+          throw error;
+        }
+        const json = await safeParseJson(response);
+        return mapAttributes(json.data || json);
+      }
       const json = await request('/products', { method: 'POST', body: JSON.stringify({ product: data }) });
       return mapAttributes(json.data || json);
     },
-    update: async (id: string, data: Partial<Product>) => {
+    update: async (id: string, data: any) => {
+      const hasFiles = data.cover_image instanceof File || (Array.isArray(data.preview_images) && data.preview_images.some((f: any) => f instanceof File));
+      if (hasFiles) {
+        const formData = new FormData();
+        const { cover_image, preview_images, ...rest } = data;
+        Object.entries(rest).forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            (value as any[]).forEach((v) => formData.append(`product[${key}][]`, String(v)));
+          } else if (value !== null && value !== undefined) {
+            formData.append(`product[${key}]`, String(value));
+          }
+        });
+        if (cover_image instanceof File) formData.append('product[cover_image]', cover_image);
+        if (Array.isArray(preview_images)) {
+          preview_images.forEach((f: File) => { if (f instanceof File) formData.append('product[preview_images][]', f); });
+        }
+        const token = localStorage.getItem('ecolocal_token');
+        const authHeader = token ? { 'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}` } : {};
+        const response = await fetch(`${API_BASE_URL}/products/${id}`, {
+          method: 'PATCH',
+          headers: { 'Accept': 'application/json', 'ngrok-skip-browser-warning': NGROK_SKIP_VAL || '', ...authHeader },
+          body: formData
+        });
+        if (!response.ok) {
+          const errData = await safeParseJson(response);
+          const error: any = new Error(errData.message || 'Update failed');
+          error.status = response.status;
+          error.errors = errData.errors;
+          throw error;
+        }
+        const json = await safeParseJson(response);
+        return mapAttributes(json.data || json);
+      }
       const json = await request(`/products/${id}`, { method: 'PATCH', body: JSON.stringify({ product: data }) });
       return mapAttributes(json.data || json);
     },
