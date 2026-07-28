@@ -1,7 +1,7 @@
 import {
   User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus,
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
-  Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement, CustomerProduct
+  Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement, CustomerProduct, EmployeeDailyRecord
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -894,6 +894,29 @@ export const api = {
       params.append('per_page', perPage.toString());
       const json = await request(`/customer_statements/print?${params.toString()}`);
       return json;
+    },
+  },
+  employee_daily_records: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 30): Promise<PaginatedResponse<EmployeeDailyRecord>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[product_description_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/employee_daily_records?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<EmployeeDailyRecord> => {
+      const json = await request(`/employee_daily_records/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<EmployeeDailyRecord>) => {
+      const json = await request('/employee_daily_records', { method: 'POST', body: JSON.stringify({ employee_daily_record: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<EmployeeDailyRecord>) => {
+      const json = await request(`/employee_daily_records/${id}`, { method: 'PATCH', body: JSON.stringify({ employee_daily_record: data }) });
+      return mapAttributes(json.data || json);
     },
   },
 };

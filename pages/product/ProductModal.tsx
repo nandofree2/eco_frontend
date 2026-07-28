@@ -49,10 +49,10 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, onSubmit, 
   useEffect(() => {
     if (isOpen) {
       Promise.all([
-        api.categories.list('', 'name asc', 1, 100),
-        api.variants.list('', 'name asc', 1, 100),
-        api.units.list('', 'name asc', 1, 100),
-        api.customers.list('', 'name asc', 1, 100)
+        api.categories.list('', 'name asc', 1, 10),
+        api.variants.list('', 'name asc', 1, 10),
+        api.units.list('', 'name asc', 1, 10),
+        api.customers.list('', 'name asc', 1, 10)
       ]).then(([catRes, variantRes, unitRes, customerRes]) => {
         setCategories(catRes.data);
         setVariants(variantRes.data);

@@ -166,6 +166,23 @@ export interface StockProduct {
   updated_at: string;
 }
 
+export enum StatusAttendance {
+  Present = "present",
+  Absent = "absent",
+  SickLeave = "sick_leave",
+}
+export interface EmployeeDailyRecord {
+  id: string;
+  attendance_date: string;
+  check_in: string;
+  check_out: string;
+  status_attendance: StatusAttendance;
+  overtime_hours: number;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export enum AdjustmentType {
   In = "in",
   Out = "out",

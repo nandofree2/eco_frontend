@@ -73,14 +73,15 @@ export const NAV_STRUCTURE: NavItem[] = [
     ]
   },
   {
-    label: 'Settings',
+    label: 'Human Resources',
     icon: Users,
-    menuId: 'access_control',
+    menuId: 'human_resources_menu',
     colorClass: 'bg-purple-500',
-    description: 'User management and permissions',
+    description: 'Human Resources',
     children: [
       { label: 'Users', path: '/users', icon: UserCircle, resource: 'User', description: 'Manage platform users' },
-      { label: 'Roles', path: '/roles', icon: Shield, resource: 'Role', description: 'Define user roles and permissions' }
+      { label: 'Roles', path: '/roles', icon: Shield, resource: 'Role', description: 'Define user roles and permissions' },
+      { label: 'Employee Daily Records', path: '/employee_daily_records', icon: Receipt, resource: 'EmployeeDailyRecord', description: 'Manage employee daily records' }
     ]
   },
   {
