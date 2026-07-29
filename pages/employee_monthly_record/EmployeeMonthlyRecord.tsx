@@ -129,22 +129,22 @@ const EmployeeMonthlyRecord: React.FC = () => {
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {emr.total_days_present || '---'}
+                        {emr.total_days_present || 0}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {emr.total_days_absent || '---'}
+                        {emr.total_days_absent || 0}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {emr.total_days_sick}
+                        {emr.total_days_sick || 0}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {emr.total_overtime_hours}
+                        {emr.total_overtime_hours || 0}
                       </div>
                     </td>
                   </tr>

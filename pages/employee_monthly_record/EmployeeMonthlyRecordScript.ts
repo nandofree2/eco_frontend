@@ -15,7 +15,7 @@ export const useEmployeeMonthlyRecord = () => {
   const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('created_at desc');
+  const [sortBy, setSortBy] = useState<string>('month_date desc');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [perPage] = useState<number>(30);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
