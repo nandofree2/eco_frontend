@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, AlertCircle, Loader2, Calendar } from 'lucide-react';
 import { EmployeeDailyRecord } from '../../types';
+import { formatYmdToDmy, parseDmyToYmd, formatDateInput } from '../../services/helper';
 
 interface EmployeeDailyRecordModalProps {
   isOpen: boolean;
@@ -14,11 +15,15 @@ interface EmployeeDailyRecordModalProps {
 const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
   isOpen, onClose, record, onSave, loading, errors
 }) => {
-  // Helper to format Date object to YYYY-MM-DD for date input
+  const datePickerRef = useRef<HTMLInputElement>(null);
+
   const getTodayISO = () => new Date().toISOString().split('T')[0];
+  const getTodayDMY = () => formatYmdToDmy(getTodayISO());
+
+  const [dateInput, setDateInput] = useState<string>(getTodayDMY());
+  const [dateISO, setDateISO] = useState<string>(getTodayISO());
 
   const [formData, setFormData] = useState({
-    attendance_date: getTodayISO(),
     check_in: '',
     check_out: '',
     status_attendance: 'present',
@@ -30,8 +35,11 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
 
   useEffect(() => {
     if (record) {
+
+      setDateInput(record.attendance_date);
+      setDateISO(parseDmyToYmd(record.attendance_date));
+
       setFormData({
-        attendance_date: record.attendance_date ? record.attendance_date.split('T')[0] : getTodayISO(),
         check_in: record.check_in || '',
         check_out: record.check_out || '',
         status_attendance: record.status_attendance || 'present',
@@ -39,8 +47,9 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
         description: record.description || '',
       });
     } else {
+      setDateInput(getTodayDMY());
+      setDateISO(getTodayISO());
       setFormData({
-        attendance_date: getTodayISO(),
         check_in: '',
         check_out: '',
         status_attendance: 'present',
@@ -51,7 +60,24 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
     setValidationWarning(null);
   }, [record, isOpen]);
 
-  // Validation warning check
+  const handleDateInputChange = (val: string) => {
+    const formatted = formatDateInput(val, dateInput);
+    setDateInput(formatted);
+
+    if (formatted.replace(/[^0-9]/g, '').length === 8) {
+      const ymd = parseDmyToYmd(formatted);
+      if (ymd) {
+        setDateISO(ymd);
+      }
+    }
+  };
+
+  const handleDatePickerChange = (ymd: string) => {
+    if (!ymd) return;
+    setDateISO(ymd);
+    setDateInput(formatYmdToDmy(ymd));
+  };
+
   useEffect(() => {
     if (formData.check_in && formData.check_out && formData.check_in > formData.check_out) {
       setValidationWarning('Check-out time is earlier than Check-in time.');
@@ -66,7 +92,10 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      attendance_date: dateInput
+    });
   };
 
   return (
@@ -94,7 +123,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {/* Backend / Server Errors */}
           {errors?.general && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 text-red-800">
               <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -104,7 +132,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
             </div>
           )}
 
-          {/* Validation Warning Alert */}
           {validationWarning && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2 text-amber-800 text-xs font-semibold animate-in fade-in duration-150">
               <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -114,23 +141,38 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
 
           <form id="edr-form" onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Attendance Date */}
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Attendance Date <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="date"
-                  value={formData.attendance_date}
-                  onChange={(e) => setFormData({ ...formData, attendance_date: e.target.value })}
-                  onClick={(e) => (e.target as any).showPicker?.()}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-eco-500/20 focus:border-eco-500 transition-all text-xs font-medium text-gray-800 cursor-pointer"
-                  required
-                />
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    placeholder="DD/MM/YYYY"
+                    value={dateInput}
+                    onChange={(e) => handleDateInputChange(e.target.value)}
+                    className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-eco-500/20 focus:border-eco-500 transition-all text-xs font-medium text-gray-800"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => datePickerRef.current?.showPicker?.()}
+                    className="absolute right-3 text-gray-400 hover:text-eco-600 transition-colors p-1"
+                    title="Open Calendar"
+                  >
+                    <Calendar className="w-4 h-4" />
+                  </button>
+                  <input
+                    type="date"
+                    ref={datePickerRef}
+                    value={dateISO}
+                    onChange={(e) => handleDatePickerChange(e.target.value)}
+                    className="sr-only"
+                  />
+                </div>
                 {errors?.attendance_date && <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.attendance_date[0]}</p>}
               </div>
 
-              {/* Status Attendance */}
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Status Attendance <span className="text-red-500">*</span>
@@ -148,7 +190,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
                 {errors?.status_attendance && <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.status_attendance[0]}</p>}
               </div>
 
-              {/* Check In */}
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Check In
@@ -163,7 +204,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
                 {errors?.check_in && <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.check_in[0]}</p>}
               </div>
 
-              {/* Check Out */}
               <div>
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Check Out
@@ -178,7 +218,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
                 {errors?.check_out && <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.check_out[0]}</p>}
               </div>
 
-              {/* Overtime Hours */}
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Overtime Hours
@@ -195,7 +234,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
                 {errors?.overtime_hours && <p className="text-red-500 text-[10px] mt-1 font-medium">{errors.overtime_hours[0]}</p>}
               </div>
 
-              {/* Description */}
               <div className="md:col-span-2">
                 <label className="text-xs font-bold text-gray-700 uppercase tracking-wider block mb-1">
                   Description
@@ -213,7 +251,6 @@ const EmployeeDailyRecordModal: React.FC<EmployeeDailyRecordModalProps> = ({
           </form>
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100 shrink-0">
           <button
             type="button"
