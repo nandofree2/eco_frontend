@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEmployeeDailyRecord } from './EmployeeDailyRecordScript';
+import { useEmployeeMonthlyRecord } from './EmployeeMonthlyRecordScript';
 import { formatDateOnly } from '../../services/helper';
 import SEO from '../../components/SEO';
 import {
@@ -7,22 +7,21 @@ import {
   ArrowUpDown, CheckCircle2, XCircle, RefreshCw,
   ChevronLeft, ChevronRight, Filter, Users, X, AlertTriangle, Check
 } from 'lucide-react';
-import EmployeeDailyRecordModal from './EmployeeDailyRecordModal';
-import EmployeeDailyRecordDetailModal from './EmployeeDailyRecordDetailModal';
+import EmployeeMonthlyRecordDetailModal from './EmployeeMonthlyRecordDetailModal';
 
-const EmployeeDailyRecord: React.FC = () => {
+const EmployeeMonthlyRecord: React.FC = () => {
   const {
-    employeeDailyRecords, loading, searchTerm, setSearchTerm, sortBy, pagination, isModalOpen, setModalOpen,
-    isDetailModalOpen, setDetailModalOpen, selectedEDR, setSelectedEDR, recordForDetail, setRecordForDetail,
-    toasts, loadData, ability, toggleSort, handlePageChange, currentPage, perPage, handleCreateOrUpdate, actionLoading, serverErrors,
+    employeeMonthlyRecords, loading, searchTerm, setSearchTerm, sortBy, pagination, isModalOpen, setModalOpen,
+    isDetailModalOpen, setDetailModalOpen, selectedEMR, setSelectedEMR, recordForDetail, setRecordForDetail,
+    toasts, loadData, ability, toggleSort, handlePageChange, currentPage, perPage, actionLoading, serverErrors,
     setServerErrors
-  } = useEmployeeDailyRecord();
+  } = useEmployeeMonthlyRecord();
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
       <SEO
-        title="Employee Daily Records"
-        description="Manage Employee Daily Records."
+        title="Employee Monthly Records"
+        description="Manage Employee Monthly Records."
       />
 
       {/* Toasts */}
@@ -44,9 +43,9 @@ const EmployeeDailyRecord: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Receipt className="w-7 h-7 text-eco-600" /> Employee Daily Records
+            <Receipt className="w-7 h-7 text-eco-600" /> Employee Monthly Records
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Manage Employee Daily Records.</p>
+          <p className="text-gray-500 text-sm mt-1">Manage Employee Monthly Records.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -74,16 +73,6 @@ const EmployeeDailyRecord: React.FC = () => {
               </button>
             )}
           </div>
-
-
-          {ability.can('create', 'EmployeeDailyRecord') && (
-            <button
-              onClick={() => { setSelectedEDR(null); setServerErrors(null); setModalOpen(true); }}
-              className="bg-eco-600 hover:bg-eco-700 text-white px-5 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm"
-            >
-              <Plus className="w-5 h-5" /> Add
-            </button>
-          )}
         </div>
       </div>
 
@@ -95,7 +84,7 @@ const EmployeeDailyRecord: React.FC = () => {
             </div>
             <div className="h-4 w-px bg-gray-200"></div>
             <div className="text-xs font-medium text-gray-500">
-              Displaying <span className="text-gray-900 font-bold">{employeeDailyRecords.length}</span> records
+              Displaying <span className="text-gray-900 font-bold">{employeeMonthlyRecords.length}</span> records
             </div>
           </div>
         </div>
@@ -105,63 +94,57 @@ const EmployeeDailyRecord: React.FC = () => {
             <thead className="bg-gray-50/50">
               <tr>
                 <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Check In</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Check Out</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Status Attendance</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Overtime Hours</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Description</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Day Present</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Day Absent</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Sick Leave</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Total Overtime</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {loading && employeeDailyRecords.length === 0 ? (
+              {loading && employeeMonthlyRecords.length === 0 ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <tr key={i} className="animate-pulse">
                     <td colSpan={8} className="px-6 py-6"><div className="h-6 bg-gray-100 rounded-lg w-full"></div></td>
                   </tr>
                 ))
-              ) : employeeDailyRecords.length === 0 ? (
+              ) : employeeMonthlyRecords.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
                     <Receipt className="w-16 h-16 mx-auto mb-4 opacity-5" />
-                    <p className="font-bold text-lg">No Employee Daily Records found.</p>
+                    <p className="font-bold text-lg">No Employee Monthly Records found.</p>
                     <p className="text-sm">Create a new record to get started.</p>
                   </td>
                 </tr>
               ) : (
-                employeeDailyRecords.map((edr) => (
-                  <tr key={edr.id} className="group hover:bg-eco-50/20 transition-all duration-300">
+                employeeMonthlyRecords.map((emr) => (
+                  <tr key={emr.id} className="group hover:bg-eco-50/20 transition-all duration-300">
                     <td className="px-6 py-4">
                       <span
-                        onClick={() => { setRecordForDetail(edr); setDetailModalOpen(true); }}
+                        onClick={() => { setRecordForDetail(emr); setDetailModalOpen(true); }}
                         className="font-bold text-gray-900 text-sm cursor-pointer hover:text-eco-600 hover:underline"
                       >
-                        {edr.attendance_date}
+                        {emr.month_date}
                       </span>
                     </td>
 
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {edr.check_in || '---'}
+                        {emr.total_days_present || '---'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {edr.check_out || '---'}
+                        {emr.total_days_absent || '---'}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {edr.status_attendance}
+                        {emr.total_days_sick}
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {edr.overtime_hours}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
-                        {edr.description}
+                        {emr.total_overtime_hours}
                       </div>
                     </td>
                   </tr>
@@ -171,7 +154,6 @@ const EmployeeDailyRecord: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -212,29 +194,14 @@ const EmployeeDailyRecord: React.FC = () => {
         )}
       </div>
 
-      <EmployeeDailyRecordModal
-        isOpen={isModalOpen}
-        onClose={() => setModalOpen(false)}
-        onSave={handleCreateOrUpdate}
-        record={selectedEDR}
-        loading={actionLoading}
-        errors={serverErrors}
-      />
-
-      <EmployeeDailyRecordDetailModal
+      <EmployeeMonthlyRecordDetailModal
         isOpen={isDetailModalOpen}
         onClose={() => setDetailModalOpen(false)}
         record={recordForDetail}
-        canEdit={ability.can('update', 'EmployeeDailyRecord')}
-        onEdit={(rec) => {
-          setSelectedEDR(rec);
-          setServerErrors(null);
-          setModalOpen(true);
-        }}
       />
 
     </div>
   );
 };
 
-export default EmployeeDailyRecord;
+export default EmployeeMonthlyRecord;

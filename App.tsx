@@ -27,6 +27,7 @@ import AccountReceivable from './pages/account_receivable/AccountReceivable';
 import CustomerProduct from './pages/customer_product/CustomerProduct';
 import CustomerStatement from './pages/customer_statement/CustomerStatement';
 import EmployeeDailyRecord from './pages/employee_daily_record/EmployeeDailyRecord';
+import EmployeeMonthlyRecord from './pages/employee_monthly_record/EmployeeMonthlyRecord';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
 import { parseRules, Subject, ability } from './services/ability';
@@ -258,6 +259,11 @@ const App: React.FC = () => {
 					<Route path="/employee_daily_records" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="EmployeeDailyRecord">
 							<EmployeeDailyRecord />
+						</ProtectedRoute>
+					} />
+					<Route path="/employee_monthly_records" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="EmployeeMonthlyRecord">
+							<EmployeeMonthlyRecord />
 						</ProtectedRoute>
 					} />
 

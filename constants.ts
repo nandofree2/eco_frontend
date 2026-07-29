@@ -81,7 +81,8 @@ export const NAV_STRUCTURE: NavItem[] = [
     children: [
       { label: 'Users', path: '/users', icon: UserCircle, resource: 'User', description: 'Manage platform users' },
       { label: 'Roles', path: '/roles', icon: Shield, resource: 'Role', description: 'Define user roles and permissions' },
-      { label: 'Employee Daily Records', path: '/employee_daily_records', icon: Receipt, resource: 'EmployeeDailyRecord', description: 'Manage employee daily records' }
+      { label: 'Daily Records', path: '/employee_daily_records', icon: Receipt, resource: 'EmployeeDailyRecord', description: 'Manage employee daily records' },
+      { label: 'Monthly Records', path: '/employee_monthly_records', icon: Receipt, resource: 'EmployeeMonthlyRecord', description: 'Manage employee monthly records' }
     ]
   },
   {

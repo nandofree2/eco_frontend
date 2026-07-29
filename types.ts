@@ -171,6 +171,7 @@ export enum StatusAttendance {
   Absent = "absent",
   SickLeave = "sick_leave",
 }
+
 export interface EmployeeDailyRecord {
   id: string;
   attendance_date: string;
@@ -179,6 +180,18 @@ export interface EmployeeDailyRecord {
   status_attendance: StatusAttendance;
   overtime_hours: number;
   description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmployeeMonthlyRecord {
+  id: string;
+  month_date: string;
+  total_days_present: number;
+  total_days_absent: number;
+  total_days_sick: number;
+  total_overtime_hours: number;
+  employee_daily_records: EmployeeDailyRecord[];
   created_at: string;
   updated_at: string;
 }
