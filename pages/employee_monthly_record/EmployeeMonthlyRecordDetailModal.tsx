@@ -67,7 +67,7 @@ const EmployeeMonthlyRecordDetailModal: React.FC<EmployeeMonthlyRecordDetailModa
               </div>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Sick Leave</p>
-                <p className="text-sm font-bold text-gray-900 leading-tight">{record.total_days_sick ?? 0} hrs</p>
+                <p className="text-sm font-bold text-gray-900 leading-tight">{record.total_days_sick ?? 0}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3.5 bg-gray-50 rounded-2xl border border-gray-100">
@@ -110,7 +110,7 @@ const EmployeeMonthlyRecordDetailModal: React.FC<EmployeeMonthlyRecordDetailModa
                       <span className="text-xs font-bold text-gray-700">{attrs.check_out || '-'}</span>
                     </div>
                     <div className="sm:col-span-2 text-center">
-                      <span className="text-xs font-bold text-gray-700">{attrs.overtime_hours}</span>
+                      <span className="text-xs font-bold text-gray-700">{attrs.overtime_hours} hrs</span>
                     </div>
                     <div className="sm:col-span-2 text-center">
                       <span className="text-xs font-bold text-gray-700">{attrs.status_attendance}</span>
