@@ -82,7 +82,9 @@ export const NAV_STRUCTURE: NavItem[] = [
       { label: 'Users', path: '/users', icon: UserCircle, resource: 'User', description: 'Manage platform users' },
       { label: 'Roles', path: '/roles', icon: Shield, resource: 'Role', description: 'Define user roles and permissions' },
       { label: 'Daily Records', path: '/employee_daily_records', icon: Receipt, resource: 'EmployeeDailyRecord', description: 'Manage employee daily records' },
-      { label: 'Monthly Records', path: '/employee_monthly_records', icon: Receipt, resource: 'EmployeeMonthlyRecord', description: 'Manage employee monthly records' }
+      { label: 'Monthly Records', path: '/employee_monthly_records', icon: Receipt, resource: 'EmployeeMonthlyRecord', description: 'Manage employee monthly records' },
+      { label: 'Salary', path: '/salary', icon: Receipt, resource: 'Salary', description: 'Manage salary' },
+      { label: 'Salary Item', path: '/salary_items', icon: Receipt, resource: 'SalaryItem', description: 'Manage salary item' }
     ]
   },
   {

@@ -1,8 +1,9 @@
 import {
-  User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus,
+  User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, Salary,
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
   Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement, CustomerProduct, EmployeeDailyRecord,
-  EmployeeMonthlyRecord
+  EmployeeMonthlyRecord,
+  SalaryItem
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -929,6 +930,62 @@ export const api = {
       params.append('per_page', perPage.toString());
       const json = await request(`/employee_monthly_records?${params.toString()}`);
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+  },
+  salaries: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 30): Promise<PaginatedResponse<Salary>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[product_description_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/salaries?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<Salary> => {
+      const json = await request(`/salaries/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<Salary>) => {
+      const json = await request('/salaries', { method: 'POST', body: JSON.stringify({ salary: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<Salary>) => {
+      const json = await request(`/salaries/${id}`, { method: 'PATCH', body: JSON.stringify({ salary: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/salaries/${id}`, { method: 'DELETE' });
+    },
+  },
+  salary_items: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 30): Promise<PaginatedResponse<SalaryItem>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[product_description_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/salary_items?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<SalaryItem> => {
+      const json = await request(`/salary_items/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<SalaryItem>) => {
+      const json = await request('/salary_items', { method: 'POST', body: JSON.stringify({ salary_item: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<SalaryItem>) => {
+      const json = await request(`/salary_items/${id}`, { method: 'PATCH', body: JSON.stringify({ salary_item: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/salary_items/${id}`, { method: 'DELETE' });
+    },
+    salary_item_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+      const json = await request(`/salary_items/salary_item_list?q=${encodeURIComponent(q)}`);
+      return json.data || [];
     },
   },
 };
