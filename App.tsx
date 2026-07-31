@@ -5,6 +5,8 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Product from './pages/product/Product';
+import Salary from './pages/salary/Salary';
+import SalaryItem from './pages/salary_item/SalaryItem';
 import User from './pages/user/UserList';
 import Profile from './pages/user/UserProfile';
 import Category from './pages/category/Category';
@@ -264,6 +266,16 @@ const App: React.FC = () => {
 					<Route path="/employee_monthly_records" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="EmployeeMonthlyRecord">
 							<EmployeeMonthlyRecord />
+						</ProtectedRoute>
+					} />
+					<Route path="/salary" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Salary">
+							<Salary />
+						</ProtectedRoute>
+					} />
+					<Route path="/salary_items" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="SalaryItem">
+							<SalaryItem />
 						</ProtectedRoute>
 					} />
 

@@ -196,6 +196,42 @@ export interface EmployeeMonthlyRecord {
   updated_at: string;
 }
 
+export interface Salary {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  salary_item_ids?: string[];
+  salary_item_names?: string[];
+  salary_items?: Array<{ id: string; name: string }>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SalaryItem {
+  id: string;
+  name: string;
+  salary_type: SalaryType;
+  calculation_type: CalculationType;
+  amount: number;
+  description: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export enum SalaryType {
+  Allowance = "allowance",
+  Reduction = "reduction",
+}
+
+export enum CalculationType {
+  Fixed = "fixed",
+  Percentage = "percentage",
+  Hourly = "hourly",
+  Daily = "daily",
+  Formula_attendace = "formula_attendace",
+}
+
 export enum AdjustmentType {
   In = "in",
   Out = "out",
