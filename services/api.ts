@@ -1027,5 +1027,9 @@ export const api = {
       const json = await request(`/payrolls/${id}/approve`, { method: 'POST' });
       return mapAttributes(json.data || json);
     },
+    payment: async (id: string, data: any) => {
+      const json = await request(`/payrolls/${id}/payment`, { method: 'POST', body: JSON.stringify({ payroll: data }) });
+      return mapAttributes(json.data || json);
+    },
   },
 };

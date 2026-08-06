@@ -10,6 +10,7 @@ import PayrollModal from './PayrollModal';
 import PayrollDetailModal from './PayrollDetailModal';
 import DeleteConfirmModal from '../../components/DeleteConfirmModal';
 import ApproveConfirmModal from '../../components/ApproveConfirmModal';
+import PayrollPaymentModal from './PayrollPaymentModal';
 
 const Payroll: React.FC = () => {
   const {
@@ -18,7 +19,8 @@ const Payroll: React.FC = () => {
     payrollForDetail, setPayrollForDetail, payrollToDelete, setPayrollToDelete, actionLoading, deleteLoading, serverErrors,
     setServerErrors, toasts, StatusPayroll, loadPayrolls, handleCreateOrUpdate, confirmDelete, toggleSort, handlePageChange,
     formatDate, currentPage, perPage, isApproveModalOpen, setApproveModalOpen, payrollToApprove, setPayrollToApprove, confirmApprove,
-    approveLoading, handleApprove
+    approveLoading, handleApprove, handlePayment, handlePaymentDate, isPaymentModalOpen, setPaymentModalOpen, payrollToPayment, setPayrollToPayment,
+    paymentLoading
   } = usePayroll();
 
   const getStatusBadge = (status: string | number) => {
@@ -83,7 +85,6 @@ const Payroll: React.FC = () => {
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
-          {/* Search */}
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors" />
             <input
@@ -100,7 +101,6 @@ const Payroll: React.FC = () => {
             )}
           </div>
 
-          {/* Salary Filter */}
           <div className="relative group">
             <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-eco-600 transition-colors pointer-events-none" />
             <select
@@ -222,7 +222,6 @@ const Payroll: React.FC = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
           <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
             <div className="text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -277,6 +276,8 @@ const Payroll: React.FC = () => {
         payroll={payrollForDetail}
         onApprove={handleApprove}
         approveLoading={approveLoading}
+        onPayment={handlePayment}
+        paymentLoading={paymentLoading}
         onEdit={(p) => { setDetailModalOpen(false); setSelectedPayroll(p); setServerErrors(null); setModalOpen(true); }}
         onDelete={(p) => { setDetailModalOpen(false); setPayrollToDelete(p); setDeleteModalOpen(true); }}
       />
@@ -292,9 +293,17 @@ const Payroll: React.FC = () => {
         isOpen={isApproveModalOpen}
         onClose={() => setApproveModalOpen(false)}
         onConfirm={confirmApprove}
-        title="Approve Sales Order"
-        message="Are you sure you want to approve this sales order? Once approved, it cannot be edited or deleted."
+        title="Approve Payroll"
+        message="Are you sure you want to approve this Payroll? Once approved, it cannot be edited or deleted."
         loading={approveLoading}
+      />
+      <PayrollPaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        onSubmit={handlePaymentDate}
+        payroll={payrolls.find(p => p.id === payrollToPayment) || null}
+        loading={paymentLoading}
+        serverErrors={serverErrors}
       />
     </div>
   );

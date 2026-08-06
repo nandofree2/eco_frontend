@@ -10,6 +10,7 @@ interface Toast {
 
 export const usePayroll = () => {
   const [approveLoading, setApproveLoading] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   const [payrolls, setPayrolls] = useState<Payroll[]>([]);
   const [salaries, setSalaries] = useState<Salary[]>([]);
@@ -23,7 +24,9 @@ export const usePayroll = () => {
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   const [isApproveModalOpen, setApproveModalOpen] = useState(false);
+  const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
   const [payrollToApprove, setPayrollToApprove] = useState<string | null>(null);
+  const [payrollToPayment, setPayrollToPayment] = useState<string | null>(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [isDetailModalOpen, setDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -101,6 +104,29 @@ export const usePayroll = () => {
       setActionLoading(false);
     }
   };
+  const handlePaymentDate = async (formData: any) => {
+    setActionLoading(true);
+    setServerErrors(null);
+    try {
+      if (payrollToPayment) {
+        await api.payrolls.payment(payrollToPayment, formData);
+        addToast('success', 'Payroll updated successfully.');
+        const updated = await api.payrolls.get(payrollToPayment);
+        setPayrollForDetail(updated);
+      }
+      setPaymentModalOpen(false);
+      loadPayrolls(searchTerm, sortBy, 1, salaryFilter);
+    } catch (err: any) {
+      if (err.status === 422 && err.errors) {
+        setServerErrors(err.errors);
+        addToast('error', 'Validation failed.');
+      } else {
+        addToast('error', err.message || 'Action failed.');
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const confirmDelete = async () => {
     if (!payrollToDelete) return;
@@ -135,6 +161,10 @@ export const usePayroll = () => {
     setPayrollToApprove(id);
     setApproveModalOpen(true);
   };
+  const handlePayment = (id: string) => {
+    setPayrollToPayment(id);
+    setPaymentModalOpen(true);
+  };
 
   const confirmApprove = async () => {
     if (!payrollToApprove) return;
@@ -145,14 +175,11 @@ export const usePayroll = () => {
       setPayrollForDetail(prev => prev && prev.id === payrollToApprove ? { ...prev, status_payroll: StatusPayroll.Approved } : prev);
       setApproveModalOpen(false);
       loadPayrolls(searchTerm, sortBy, currentPage, salaryFilter);
-      console.log('1');
     } catch (err: any) {
-      console.log('2');
       addToast('error', err.message || 'Failed to approve payroll.');
     } finally {
       setApproveLoading(false);
       setPayrollToApprove(null);
-      console.log('3');
     }
   };
 
@@ -168,6 +195,7 @@ export const usePayroll = () => {
     perPage, pagination, isModalOpen, setModalOpen, isDetailModalOpen, setDetailModalOpen, isDeleteModalOpen, setDeleteModalOpen,
     selectedPayroll, setSelectedPayroll, payrollForDetail, setPayrollForDetail, payrollToDelete, setPayrollToDelete, actionLoading,
     deleteLoading, serverErrors, setServerErrors, toasts, StatusPayroll, loadPayrolls, handleCreateOrUpdate, confirmDelete, handleApprove,
-    toggleSort, handlePageChange, formatDate, isApproveModalOpen, setApproveModalOpen, payrollToApprove, setPayrollToApprove, confirmApprove, approveLoading
+    toggleSort, handlePageChange, formatDate, isApproveModalOpen, setApproveModalOpen, payrollToApprove, setPayrollToApprove, confirmApprove,
+    approveLoading, isPaymentModalOpen, setPaymentModalOpen, payrollToPayment, setPayrollToPayment, paymentLoading, handlePayment, handlePaymentDate
   };
 };
