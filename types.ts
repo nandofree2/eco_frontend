@@ -248,6 +248,31 @@ export enum ProgressStatus {
   Finished = "finished",
 }
 
+export enum StatusPayroll {
+  Draft = 'draft',
+  Approved = 'approved',
+  Rejected = 'rejected',
+  Paid = 'paid',
+}
+
+export interface Payroll {
+  id: string;
+  salary_id: string;
+  salary_name?: string;
+  salary_details?: Array<{ id: string; name: string }>;
+  salary?: Salary;
+  name: string;
+  start_date: string;
+  end_date: string;
+  payment_date?: string;
+  status_payroll: StatusPayroll | string | number;
+  total_allowances: number;
+  total_reductions: number;
+  total_net_salary: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export enum ApprovalStatus {
   Draft = "draft",
   Approved = "approved",

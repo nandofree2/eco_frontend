@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import Product from './pages/product/Product';
 import Salary from './pages/salary/Salary';
 import SalaryItem from './pages/salary_item/SalaryItem';
+import Payrol from './pages/payroll/Payroll';
 import User from './pages/user/UserList';
 import Profile from './pages/user/UserProfile';
 import Category from './pages/category/Category';
@@ -276,6 +277,11 @@ const App: React.FC = () => {
 					<Route path="/salary_items" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="SalaryItem">
 							<SalaryItem />
+						</ProtectedRoute>
+					} />
+					<Route path="/payroll" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Payroll">
+							<Payrol />
 						</ProtectedRoute>
 					} />
 
