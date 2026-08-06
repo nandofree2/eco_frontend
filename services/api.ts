@@ -3,7 +3,7 @@ import {
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
   Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement, CustomerProduct, EmployeeDailyRecord,
   EmployeeMonthlyRecord,
-  SalaryItem
+  SalaryItem, Payroll
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -957,6 +957,15 @@ export const api = {
     delete: async (id: string) => {
       await request(`/salaries/${id}`, { method: 'DELETE' });
     },
+    salary_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
+      const params = new URLSearchParams();
+      if (q) params.append('q', q);
+      const json = await request(`/salaries?${params.toString()}`);
+      return (json.data || []).map((item: any) => ({
+        id: item.id,
+        name: item.attributes?.name || item.name
+      }));
+    },
   },
   salary_items: {
     list: async (query?: string, sort?: string, page: number = 1, perPage: number = 30): Promise<PaginatedResponse<SalaryItem>> => {
@@ -986,6 +995,37 @@ export const api = {
     salary_item_list: async (q: string = ''): Promise<{ id: string, name: string }[]> => {
       const json = await request(`/salary_items/salary_item_list?q=${encodeURIComponent(q)}`);
       return json.data || [];
+    },
+  },
+  payrolls: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 20, salaryId?: string): Promise<PaginatedResponse<Payroll>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[title_cont]', query);
+      if (salaryId) params.append('q[salary_id_eq]', salaryId);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/payrolls?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<Payroll> => {
+      const json = await request(`/payrolls/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<Payroll>) => {
+      const json = await request('/payrolls', { method: 'POST', body: JSON.stringify({ payroll: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<Payroll>) => {
+      const json = await request(`/payrolls/${id}`, { method: 'PATCH', body: JSON.stringify({ payroll: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/payrolls/${id}`, { method: 'DELETE' });
+    },
+    approve: async (id: string) => {
+      const json = await request(`/payrolls/${id}/approve`, { method: 'POST' });
+      return mapAttributes(json.data || json);
     },
   },
 };

@@ -95,7 +95,7 @@ const Salary: React.FC = () => {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="text-center border-collapse">
+          <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50/50">
               <tr>
                 <th className="px-4 py-3 text-xs font-bold text-gray-400 uppercase tracking-widest cursor-pointer hover:text-gray-900 transition-colors group" onClick={() => toggleSort('name')}>

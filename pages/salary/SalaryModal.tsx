@@ -120,7 +120,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="col-span-1 md:col-span-2">
-              <label className={`block text-xs font-black uppercase tracking-widest mb-1.5 ${hasError('name') ? 'text-red-600' : 'text-gray-400'}`}>Product Name</label>
+              <label className={`block text-xs font-black uppercase tracking-widest mb-1.5 ${hasError('name') ? 'text-red-600' : 'text-gray-400'}`}>Salary Name</label>
               <div className="relative">
                 <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                 <input
@@ -130,7 +130,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
                   className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl outline-none transition-all ${hasError('name') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-100 focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Organic Arabica Beans"
+                  placeholder="e.g. Gaji Bulana, Gaji Harian, THR, Bonus Sales ..."
                 />
               </div>
             </div>
@@ -145,7 +145,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
                   className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 border rounded-xl outline-none transition-all ${hasError('category') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-100 focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  placeholder="e.g. Organic Arabica Beans"
+                  placeholder="e.g. Gaji, Bonus, Pesangon"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
               className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl outline-none focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500 min-h-[100px] text-sm font-medium transition-all"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Provide context regarding product origin, usage, or specifications..."
+              placeholder="Provide context regarding salary origin, usage, or specifications..."
             />
           </div>
 
