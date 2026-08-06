@@ -27,10 +27,6 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
   const [endDateInput, setEndDateInput] = useState('');
   const endDatePickerRef = useRef<HTMLInputElement>(null);
 
-  const [paymentDate, setPaymentDate] = useState('');
-  const [paymentDateInput, setPaymentDateInput] = useState('');
-  const paymentDatePickerRef = useRef<HTMLInputElement>(null);
-
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -47,9 +43,6 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
         setEndDate(endYmd);
         setEndDateInput(formatYmdToDmy(endYmd));
 
-        const payYmd = payroll.payment_date ? payroll.payment_date.split('T')[0] : '';
-        setPaymentDate(payYmd);
-        setPaymentDateInput(formatYmdToDmy(payYmd));
       } else {
         setSalaryId('');
         setName('');
@@ -57,8 +50,6 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
         setStartDateInput('');
         setEndDate('');
         setEndDateInput('');
-        setPaymentDate('');
-        setPaymentDateInput('');
       }
       setErrors({});
     }
@@ -120,7 +111,6 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
       name: name,
       start_date: startDate,
       end_date: endDate,
-      payment_date: paymentDate || null,
     };
 
     onSubmit(formData);
@@ -151,12 +141,9 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
           </button>
         </div>
 
-        {/* Form Body */}
         <div className="flex-1 overflow-y-auto p-6">
           <form id="payroll-form" onSubmit={handleSubmit} className="space-y-4">
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Salary Selection */}
               <div>
                 <SearchableDropdownSalary
                   label="Salary"
@@ -262,38 +249,7 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
                   </p>
                 )}
               </div>
-
-              {/* Payment Date */}
-              <div className="space-y-1">
-                <label className="text-[10px] font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-eco-600" /> Payment Date
-                </label>
-                <div className="relative flex items-center">
-                  <input
-                    type="text"
-                    placeholder="DD/MM/YYYY"
-                    value={paymentDateInput}
-                    onChange={(e) => handleDateChange(e.target.value, paymentDateInput, setPaymentDateInput, setPaymentDate)}
-                    className="w-full pl-3 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-eco-500/20 transition-all text-xs font-medium text-gray-800"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => paymentDatePickerRef.current?.showPicker?.()}
-                    className="absolute right-2 text-gray-400 hover:text-eco-600 transition-colors p-1"
-                  >
-                    <Calendar className="w-4 h-4" />
-                  </button>
-                  <input
-                    type="date"
-                    ref={paymentDatePickerRef}
-                    value={paymentDate}
-                    onChange={(e) => handlePickerChange(e.target.value, setPaymentDateInput, setPaymentDate)}
-                    className="sr-only"
-                  />
-                </div>
-              </div>
             </div>
-
           </form>
         </div>
 
@@ -319,8 +275,8 @@ const PayrollModal: React.FC<PayrollModalProps> = ({
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

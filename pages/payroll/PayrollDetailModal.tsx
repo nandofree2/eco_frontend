@@ -9,12 +9,14 @@ interface PayrollDetailModalProps {
   onEdit?: (payroll: Payroll) => void;
   onDelete?: (payroll: Payroll) => void;
   onApprove?: (payrollId: string) => void;
+  onPayment?: (payrollId: string) => void;
   approveLoading?: boolean;
+  paymentLoading?: boolean;
 }
 
 
 const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
-  isOpen, onClose, payroll, onEdit, onDelete, onApprove, approveLoading
+  isOpen, onClose, payroll, onEdit, onDelete, onApprove, approveLoading, onPayment, paymentLoading
 }) => {
   if (!isOpen || !payroll) return null;
 
@@ -151,7 +153,6 @@ const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
         <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-100">
           {payroll.status_payroll !== 'approved' && onApprove && (
             <button
@@ -160,6 +161,15 @@ const PayrollDetailModal: React.FC<PayrollDetailModalProps> = ({
               className="px-4 py-2.5 bg-green-50 text-green-600 hover:bg-green-100 border border-transparent hover:border-green-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm"
             >
               <CheckCircle2 className="w-4 h-4" /> {approveLoading ? 'Approving...' : 'Approve'}
+            </button>
+          )}
+          {payroll.status_payroll === 'approved' && onPayment && (
+            <button
+              onClick={() => onPayment(payroll.id)}
+              disabled={paymentLoading}
+              className="px-4 py-2.5 bg-green-50 text-green-600 hover:bg-green-100 border border-transparent hover:border-green-200 font-black text-xs uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 shadow-sm"
+            >
+              <CheckCircle2 className="w-4 h-4" /> {paymentLoading ? 'Paying...' : 'Confirm Payment Date'}
             </button>
           )}
           {payroll.status_payroll !== 'approved' && onEdit && (
