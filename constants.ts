@@ -85,6 +85,7 @@ export const NAV_STRUCTURE: NavItem[] = [
       { label: 'Monthly Records', path: '/employee_monthly_records', icon: Receipt, resource: 'EmployeeMonthlyRecord', description: 'Manage employee monthly records' },
       { label: 'Salary', path: '/salary', icon: Receipt, resource: 'Salary', description: 'Manage salary' },
       { label: 'Salary Item', path: '/salary_items', icon: Receipt, resource: 'SalaryItem', description: 'Manage salary item' },
+      { label: 'User Pay Rate', path: '/user_pay_rates', icon: Receipt, resource: 'UserPayRate', description: 'Manage user pay rate' },
       { label: 'Payroll', path: '/payroll', icon: Receipt, resource: 'Payroll', description: 'Manage Payroll' },
 
     ]

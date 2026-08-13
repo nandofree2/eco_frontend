@@ -121,14 +121,17 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
                 <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Percentage })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Percentage ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
                   Percentage
                 </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Daily })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Daily ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Daily
-                </button>
                 <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Hourly })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Hourly ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
                   Hourly
                 </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Formula_attendace })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Formula_attendace ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Formula Attendance
+                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailyPresent })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailyPresent ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Daily Present
+                </button>
+                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailySick })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailySick ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Daily Sick
+                </button>
+                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailyAbsent })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailyAbsent ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                  Daily Absent
                 </button>
               </div>
             </div>

@@ -169,7 +169,7 @@ export interface StockProduct {
 export enum StatusAttendance {
   Present = "present",
   Absent = "absent",
-  SickLeave = "sick_leave",
+  Sick = "sick",
 }
 
 export interface EmployeeDailyRecord {
@@ -228,8 +228,9 @@ export enum CalculationType {
   Fixed = "fixed",
   Percentage = "percentage",
   Hourly = "hourly",
-  Daily = "daily",
-  Formula_attendace = "formula_attendace",
+  DailyPresent = "daily_present",
+  DailySick = "daily_sick",
+  DailyAbsent = "daily_absent"
 }
 
 export enum AdjustmentType {
@@ -255,6 +256,23 @@ export enum StatusPayroll {
   Paid = 'paid',
 }
 
+export interface PayrollItemSnapshot {
+  id: string;
+  name: string;
+  calculation_type: string;
+  rate: number;
+  qty: number;
+  amount: number;
+}
+
+export interface PayrollDetailItem {
+  name: string;
+  total_allowance: number;
+  total_reduction: number;
+  net_salary: number;
+  items_snapshot: PayrollItemSnapshot[];
+}
+
 export interface Payroll {
   id: string;
   salary_id: string;
@@ -269,6 +287,7 @@ export interface Payroll {
   total_allowances: number;
   total_reductions: number;
   total_net_salary: number;
+  payroll_details?: PayrollDetailItem[];
   created_at: string;
   updated_at: string;
 }
@@ -334,6 +353,21 @@ export interface DeliveryOrderItem {
   sales_order_item_stock?: number;
   quantity: number;
   total_price: number;
+}
+
+export interface UserPayRate {
+  id?: string;
+  user_id: string;
+  user_name?: string;
+  monthly_rate: number;
+  daily_rate: number;
+  hourly_rate: number;
+  overtime_hourly_rate: number;
+  effective_from: string;
+  effective_until: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface SalesOrder {
