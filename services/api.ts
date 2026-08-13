@@ -2,8 +2,7 @@ import {
   User, Product, Category, Province, City, Branch, UnitOfMeasurement, Role, DashboardStats, ProductStatus, Salary,
   PaginatedResponse, PaginationMeta, Customer, StockProduct, AdjustmentProduct, SalesOrder, DeliveryOrder,
   Invoice, AccountReceivable, Deposit, FinancialTransaction, CustomerStatement, CustomerProduct, EmployeeDailyRecord,
-  EmployeeMonthlyRecord,
-  SalaryItem, Payroll
+  EmployeeMonthlyRecord, SalaryItem, Payroll, UserPayRate
 } from '../types';
 
 const API_BASE_URL = process.env.API_BASE_URL;
@@ -415,13 +414,18 @@ export const api = {
       const json = await request(`/users?${params.toString()}`);
       return { data: (json.data || []).map(mapAttributes), meta: json.meta };
     },
+    user_pay_rate_list: async (query?: string, sort?: string): Promise<PaginatedResponse<User>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[name_or_email_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      const json = await request(`/users/user_pay_rate_list?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
     getProfile: async (): Promise<User> => {
-      // Fetch specifically using the /profile endpoint
       const json = await request('/users/profile');
       return mapAttributes(json.data || json);
     },
     updateProfile: async (id: string, data: any) => {
-      // Use PATCH /users/:id for profile/security updates as per instruction
       const json = await request(`/users/${id}`, { method: 'PATCH', body: JSON.stringify({ user: data }) });
       const mapped = mapAttributes(json.data || json);
       if (mapped) {
@@ -430,7 +434,6 @@ export const api = {
       return mapped;
     },
     changePassword: async (id: string, data: any) => {
-      // PUT /api/v1/users/:id/change_password
       const json = await request(`/users/${id}/change_password`, {
         method: 'PUT',
         body: JSON.stringify({ user: data })
@@ -1030,6 +1033,32 @@ export const api = {
     payment: async (id: string, data: any) => {
       const json = await request(`/payrolls/${id}/payment`, { method: 'POST', body: JSON.stringify({ payroll: data }) });
       return mapAttributes(json.data || json);
+    },
+  },
+  user_pay_rates: {
+    list: async (query?: string, sort?: string, page: number = 1, perPage: number = 30): Promise<PaginatedResponse<UserPayRate>> => {
+      const params = new URLSearchParams();
+      if (query) params.append('q[description_cont]', query);
+      if (sort) params.append('q[s]', sort);
+      params.append('page', page.toString());
+      params.append('per_page', perPage.toString());
+      const json = await request(`/user_pay_rates?${params.toString()}`);
+      return { data: (json.data || []).map(mapAttributes), meta: json.meta };
+    },
+    get: async (id: string): Promise<UserPayRate> => {
+      const json = await request(`/user_pay_rates/${id}`);
+      return mapAttributes(json.data || json);
+    },
+    create: async (data: Partial<UserPayRate>) => {
+      const json = await request('/user_pay_rates', { method: 'POST', body: JSON.stringify({ user_pay_rate: data }) });
+      return mapAttributes(json.data || json);
+    },
+    update: async (id: string, data: Partial<UserPayRate>) => {
+      const json = await request(`/user_pay_rates/${id}`, { method: 'PATCH', body: JSON.stringify({ user_pay_rate: data }) });
+      return mapAttributes(json.data || json);
+    },
+    delete: async (id: string) => {
+      await request(`/user_pay_rates/${id}`, { method: 'DELETE' });
     },
   },
 };

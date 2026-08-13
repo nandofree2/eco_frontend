@@ -30,6 +30,7 @@ import AccountReceivable from './pages/account_receivable/AccountReceivable';
 import CustomerProduct from './pages/customer_product/CustomerProduct';
 import CustomerStatement from './pages/customer_statement/CustomerStatement';
 import EmployeeDailyRecord from './pages/employee_daily_record/EmployeeDailyRecord';
+import UserPayRate from './pages/user_pay_rate/UserPayRate';
 import EmployeeMonthlyRecord from './pages/employee_monthly_record/EmployeeMonthlyRecord';
 import { AuthState } from './types';
 import { AbilityProvider, AbilityContext } from './context/AbilityContext';
@@ -282,6 +283,11 @@ const App: React.FC = () => {
 					<Route path="/payroll" element={
 						<ProtectedRoute auth={auth} setAuth={setAuth} resource="Payroll">
 							<Payrol />
+						</ProtectedRoute>
+					} />
+					<Route path="/user_pay_rates" element={
+						<ProtectedRoute auth={auth} setAuth={setAuth} resource="UserPayRate">
+							<UserPayRate />
 						</ProtectedRoute>
 					} />
 
