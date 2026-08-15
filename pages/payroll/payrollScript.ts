@@ -17,10 +17,10 @@ export const usePayroll = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [salaryFilter, setSalaryFilter] = useState<string>('');
-  const [sortBy, setSortBy] = useState('created_at desc');
+  const [sortBy, setSortBy] = useState('start_date desc');
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [perPage] = useState(10);
+  const [perPage] = useState(20);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);
 
   const [isApproveModalOpen, setApproveModalOpen] = useState(false);
@@ -174,6 +174,7 @@ export const usePayroll = () => {
       addToast('success', 'Payroll approved successfully.');
       setPayrollForDetail(prev => prev && prev.id === payrollToApprove ? { ...prev, status_payroll: StatusPayroll.Approved } : prev);
       setApproveModalOpen(false);
+      setDetailModalOpen(false);
       loadPayrolls(searchTerm, sortBy, currentPage, salaryFilter);
     } catch (err: any) {
       addToast('error', err.message || 'Failed to approve payroll.');
