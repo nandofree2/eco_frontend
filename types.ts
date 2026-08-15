@@ -226,11 +226,19 @@ export enum SalaryType {
 
 export enum CalculationType {
   Fixed = "fixed",
-  Percentage = "percentage",
-  Hourly = "hourly",
-  DailyPresent = "daily_present",
-  DailySick = "daily_sick",
-  DailyAbsent = "daily_absent"
+  PercentOfTotalPayRate = "percent_of_total_pay_rate",
+  HourlyFix = "hourly_fix",
+  HourlyPayRate = "hourly_pay_rate",
+  OvertimeHourlyFix = "overtime_hourly_fix",
+  OvertimeHourlyPayRate = "overtime_hourly_pay_rate",
+  DailyPresentFix = "daily_present_fix",
+  DailyPresentPayRate = "daily_present_pay_rate",
+  DailySickFix = "daily_sick_fix",
+  DailySickPayRate = "daily_sick_pay_rate",
+  DailyAbsentFix = "daily_absent_fix",
+  DailyAbsentPayRate = "daily_absent_pay_rate",
+  MonthlyFix = "monthly_fix",
+  MonthlyPayRate = "monthly_pay_rate"
 }
 
 export enum AdjustmentType {

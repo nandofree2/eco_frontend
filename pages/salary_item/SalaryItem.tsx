@@ -17,31 +17,14 @@ const SalaryItem: React.FC = () => {
     actionLoading, deleteLoading, serverErrors, setServerErrors, toasts, loadSalaries, handleCreateOrUpdate, confirmDelete, toggleSort,
     handlePageChange
   } = useSalaryItem();
-  const getBadgeColor = (type: CalculationType) => {
-    switch (type) {
-      case CalculationType.Percentage:
-        return 'bg-eco-50 text-eco-600 border-eco-100';
-      case CalculationType.Fixed:
-        return 'bg-indigo-50 text-indigo-600 border-indigo-100';
-      case CalculationType.Hourly:
-        return 'bg-amber-50 text-amber-600 border-amber-100';
-      case CalculationType.Daily:
-        return 'bg-sky-50 text-sky-600 border-sky-100';
-      case CalculationType.Formula_attendace:
-        return 'bg-purple-50 text-purple-600 border-purple-100';
-      default:
-        return 'bg-gray-50 text-gray-600 border-gray-100';
-    }
-  };
 
   return (
     <div className="space-y-6 relative min-h-[500px]">
       <SEO
-        title="Salary Registry"
+        title="Salary Item"
         description="Manage Salary"
       />
 
-      {/* Toasts */}
       <div className="fixed top-20 right-6 z-[200] space-y-3 w-80 pointer-events-none">
         {toasts.map(toast => (
           <div key={toast.id} className={`pointer-events-auto p-4 rounded-xl shadow-2xl border flex items-start gap-3 animate-in slide-in-from-right duration-300 ${toast.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
@@ -143,7 +126,7 @@ const SalaryItem: React.FC = () => {
                 <tr>
                   <td colSpan={5} className="px-6 py-24 text-center text-gray-400 bg-gray-50/20">
                     <Package className="w-16 h-16 mx-auto mb-4 opacity-5" />
-                    <p className="font-bold text-lg">No Salary registered.</p>
+                    <p className="font-bold text-lg">No Salary Item registered.</p>
                     <p className="text-sm">Initiate registration to begin tracking Salary for this asset.</p>
                   </td>
                 </tr>
@@ -166,7 +149,7 @@ const SalaryItem: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase border ${getBadgeColor(salary_item.calculation_type)}`}>
+                      <span className={`text-[10px] font-black px-1.5 py-0.5 rounded uppercase border bg-purple-50 text-purple-600 border-purple-100`}>
                         {salary_item.calculation_type}
                       </span>
                     </td>

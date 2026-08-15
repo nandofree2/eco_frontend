@@ -15,8 +15,8 @@ interface SalaryModalProps {
 const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, salary_item, loading, serverErrors }) => {
   const [formData, setFormData] = useState({
     name: '',
-    salary_type: '',
-    calculation_type: '',
+    salary_type: SalaryType.Allowance,
+    calculation_type: CalculationType.Fixed,
     amount: 0,
     description: '',
   });
@@ -104,35 +104,40 @@ const SalaryModal: React.FC<SalaryModalProps> = ({ isOpen, onClose, onSubmit, sa
             <div className="col-span-1 md:col-span-2">
               <label className={`block text-xs font-black uppercase tracking-widest mb-1.5 ${hasError('salary_type') ? 'text-red-600' : 'text-gray-400'}`}>Salary Type</label>
               <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1.5 border border-gray-100">
-                <button type="button" onClick={() => setFormData({ ...formData, salary_type: 'allowance' })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.salary_type === 'allowance' ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                <button type="button" onClick={() => setFormData({ ...formData, salary_type: SalaryType.Allowance })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.salary_type === SalaryType.Allowance ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
                   Allowance
                 </button>
-                <button type="button" onClick={() => setFormData({ ...formData, salary_type: 'reduction' })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.salary_type === 'reduction' ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
+                <button type="button" onClick={() => setFormData({ ...formData, salary_type: SalaryType.Reduction })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.salary_type === SalaryType.Reduction ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
                   Deduction
                 </button>
               </div>
             </div>
             <div className="col-span-1 md:col-span-2">
-              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Status Product</label>
-              <div className="flex bg-gray-50 p-1.5 rounded-2xl gap-1.5 border border-gray-100">
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Fixed })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Fixed ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Fixed
-                </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Percentage })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Percentage ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Percentage
-                </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.Hourly })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.Hourly ? 'bg-white text-indigo-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Hourly
-                </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailyPresent })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailyPresent ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Daily Present
-                </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailySick })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailySick ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Daily Sick
-                </button>
-                <button type="button" onClick={() => setFormData({ ...formData, calculation_type: CalculationType.DailyAbsent })} className={`flex-1 py-2 text-xs font-black uppercase tracking-tighter rounded-xl transition-all ${formData.calculation_type === CalculationType.DailyAbsent ? 'bg-white text-eco-600 shadow-md border border-gray-100' : 'text-gray-400 hover:text-gray-600'}`}>
-                  Daily Absent
-                </button>
+              <label className="block text-xs font-black uppercase tracking-widest text-gray-400 mb-1.5">Calculation Type</label>
+              <div className="relative">
+                <select
+                  value={formData.calculation_type}
+                  onChange={(e) => setFormData({ ...formData, calculation_type: e.target.value })}
+                  className={`w-full px-4 py-2.5 bg-gray-50 border rounded-xl outline-none transition-all appearance-none ${hasError('calculation_type') ? 'border-red-500 ring-4 ring-red-100' : 'border-gray-100 focus:bg-white focus:ring-4 focus:ring-eco-500/10 focus:border-eco-500'}`}
+                >
+                  <option value={CalculationType.Fixed}>Fixed</option>
+                  <option value={CalculationType.PercentOfTotalPayRate}>Percent of Total Pay Rate</option>
+                  <option value={CalculationType.HourlyFix}>Hourly Fix</option>
+                  <option value={CalculationType.HourlyPayRate}>Hourly Pay Rate</option>
+                  <option value={CalculationType.OvertimeHourlyFix}>Overtime Hourly Fix</option>
+                  <option value={CalculationType.OvertimeHourlyPayRate}>Overtime Hourly Pay Rate</option>
+                  <option value={CalculationType.DailyPresentFix}>Daily Present Fix</option>
+                  <option value={CalculationType.DailyPresentPayRate}>Daily Present Pay Rate</option>
+                  <option value={CalculationType.DailySickFix}>Daily Sick Fix</option>
+                  <option value={CalculationType.DailySickPayRate}>Daily Sick Pay Rate</option>
+                  <option value={CalculationType.DailyAbsentFix}>Daily Absent Fix</option>
+                  <option value={CalculationType.DailyAbsentPayRate}>Daily Absent Pay Rate</option>
+                  <option value={CalculationType.MonthlyFix}>Monthly Fix</option>
+                  <option value={CalculationType.MonthlyPayRate}>Monthly Pay Rate</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
               </div>
             </div>
           </div>
