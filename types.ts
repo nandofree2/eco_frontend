@@ -413,7 +413,8 @@ export interface DeliveryOrder {
   sales_order_code?: string;
   description?: string;
   approval_status: ApprovalStatus;
-  invoiced_date?: Date;
+  invoiced_date?: string;
+  invoiced_code?: string;
   delivery_order_items: DeliveryOrderItem[];
   created_at: string;
   updated_at: string;

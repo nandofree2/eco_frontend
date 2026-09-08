@@ -1,6 +1,7 @@
 import React from 'react';
 import { SalesOrder } from '../../types';
 import { X, ShoppingCart, Building2, Calendar, FileText, ArrowRight, Package, Users, Receipt, Percent, DollarSign, CheckCircle2, Edit2, Trash2 } from 'lucide-react';
+import { formatDateOnly } from '@/services/helper';
 
 interface SalesOrderDetailModalProps {
   isOpen: boolean;
@@ -32,7 +33,6 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all border border-gray-100 flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="bg-eco-600 px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-white/20 rounded-lg">
@@ -47,15 +47,10 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* General Info */}
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5" />
-                </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Branch</p>
                   <h3 className="text-base font-black text-gray-900 leading-tight">{order.branch_name || '---'}</h3>
@@ -63,9 +58,6 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
               </div>
 
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                  <Users className="w-5 h-5" />
-                </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Customer</p>
                   <h3 className="text-base font-black text-gray-900 leading-tight">{order.customer_name || '---'}</h3>
@@ -176,22 +168,19 @@ const SalesOrderDetailModal: React.FC<SalesOrderDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Timestamps */}
           <div className="pt-3 border-t border-gray-100 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Sales Order Created At</span>
-                <span className="text-xs font-bold text-gray-700">{formatDate(order.sales_order_date)}</span>
-
+                <span className="text-[10px] font-bold uppercase tracking-wider">Created At</span>
               </div>
+              <span className="text-xs font-bold text-gray-700">{formatDateOnly(order.sales_order_date)}</span>
               <div className="flex items-center gap-1.5 text-gray-400">
                 <Calendar className="w-3.5 h-3.5" />
                 <span className="text-[10px] font-bold uppercase tracking-wider">Payment Deadline</span>
-                <span className="text-xs font-bold text-gray-700">{order.payment_deadline} days</span>
               </div>
+              <span className="text-xs font-bold text-gray-700">{order.payment_deadline} days</span>
             </div>
-
           </div>
         </div>
 

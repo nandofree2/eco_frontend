@@ -31,7 +31,6 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all border border-gray-100 flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="bg-eco-600 px-4 py-3 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-white/20 rounded-lg">
@@ -46,28 +45,31 @@ const InvoiceDetailModal: React.FC<InvoiceDetailModalProps> = ({
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
-          {/* General Info */}
           <div className="space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
-                  <Building2 className="w-5 h-5" />
-                </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Branch</p>
-                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.branch_name || '---'}</h3>
+                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.branch_name}</h3>
                 </div>
               </div>
-
               <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <div className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                  <Users className="w-5 h-5" />
-                </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Customer</p>
-                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.customer_name || '---'}</h3>
+                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.customer_name}</h3>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Sales Order</p>
+                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.sales_order_code}</h3>
+                </div>
+              </div>
+              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Delivery Order</p>
+                  <h3 className="text-base font-black text-gray-900 leading-tight">{order.delivery_order_code}</h3>
                 </div>
               </div>
             </div>
